@@ -17,15 +17,21 @@
   <h2>Behaviour</h2>
   <label><input type="checkbox" id="jumpAfterCreate"> Jump to a folder right after creating it</label>
   <label><input type="checkbox" id="closeOnBlur"> Close the spotlight window when it loses focus</label>
+  <label><input type="checkbox" id="revealFolderPane"> Show the folder pane and scroll to the folder when jumping</label>
   <p>
     <button id="clearRecent">Clear recent folders</button>
     <button id="openSpotlight">Open spotlight</button>
   </p>
 
-  <h2>Keyboard</h2>
+  <h2>Keyboard shortcuts</h2>
   <p class="dim">
-    Defaults: <kbd>Ctrl+Shift+Space</kbd> spotlight, <kbd>Alt+Shift+J</kbd> toolbar popup.
-    Change them (and bind direct keys for j1–j5) in Add-ons Manager → ⚙ → Manage Extension Shortcuts.
+    Click a box and press the new keys (for example <kbd>Ctrl+Alt+J</kbd>).
+    <kbd>Backspace</kbd> clears it, <kbd>Esc</kbd> cancels. Give j1–j5 a key to jump
+    without opening the palette.
   </p>
+  <table>
+    <thead><tr><th>Action</th><th>Keys</th><th></th><th></th></tr></thead>
+    <tbody id="keyboard"></tbody>
+  </table>
 </body>
 </html>

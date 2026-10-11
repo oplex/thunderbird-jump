@@ -10,7 +10,7 @@
 //   { op: "delete", name }                 { op: "create", parentId, segments }
 
 import { parseInput, matchShortcuts, compareShortcutKeys, shortcutKey } from "./parse.js";
-import { rankFolders } from "./fuzzy.js";
+import { rankFolders, fold } from "./fuzzy.js";
 
 export const HELP = [
   ["text", "fuzzy search all folders, Enter to jump"],
@@ -23,6 +23,7 @@ export const HELP = [
   ["query > A/B", "find a parent folder, create A/B inside it"],
   ["Ctrl+N", "create a subfolder inside the highlighted folder"],
   ["Shift+Enter", "open the folder in a new tab"],
+  [":keys", "change keyboard shortcuts and settings"],
 ];
 
 const label = (entry) => entry.segments.join(" › ");
@@ -97,6 +98,9 @@ export function buildRows(input, ctx) {
     case "home":
       return homeRows(ctx);
 
+    case "options":
+      return [{ type: "item", icon: "⚙", title: "Open options", detail: "keyboard shortcuts, behaviour, saved shortcuts", action: { op: "options" } }];
+
     case "help":
       return HELP.map(([k, v]) => ({ type: "item", icon: "⌨", title: k, detail: v, action: null }));
 
@@ -105,7 +109,21 @@ export function buildRows(input, ctx) {
       const exact = ctx.shortcuts[shortcutKey(p.query)];
       if (exact) rows.push(...shortcutRows(ctx, [exact], (s) => ({ op: "jump", folderId: s.folderId })));
       const ranked = searchFolders(ctx, p.query).filter((r) => !exact || r.entry.id !== exact.folderId);
-      rows.push(...rankedRows(ranked, (e) => ({ op: "jump", folderId: e.id }), badges));
+      // Order: folders named exactly as typed, then recently used matches
+      // (newest first), then everything else by score.
+      const recentRank = new Map(ctx.recent.map((id, i) => [id, i]));
+      const q = fold(p.query.trim());
+      const exactName = ranked.filter((r) => fold(r.entry.name) === q);
+      const rest = ranked.filter((r) => !exactName.includes(r));
+      const recent = rest.filter((r) => recentRank.has(r.entry.id)).sort((a, b) => recentRank.get(a.entry.id) - recentRank.get(b.entry.id));
+      const others = rest.filter((r) => !recentRank.has(r.entry.id));
+      const jump = (e) => ({ op: "jump", folderId: e.id });
+      rows.push(...rankedRows(exactName, jump, badges));
+      if (recent.length) {
+        rows.push({ type: "header", text: "Recent" }, ...rankedRows(recent, jump, badges));
+        if (others.length) rows.push({ type: "header", text: "Folders" });
+      }
+      rows.push(...rankedRows(others, jump, badges));
       if (!rows.length) rows.push({ type: "info", text: `No folder matches “${p.query}” · try “${p.query} > New name” to create` });
       return rows;
     }

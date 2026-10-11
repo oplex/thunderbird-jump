@@ -132,7 +132,7 @@ function quickJump(digit) {
       return;
     }
     await pushRecent(s.folderId);
-    await jumpToFolder(s.folderId, state.windowId);
+    await jumpToFolder(s.folderId, state.windowId, { revealPane: state.settings.revealFolderPane });
     close();
   });
 }

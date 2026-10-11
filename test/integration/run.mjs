@@ -26,6 +26,7 @@ if (!bin) {
 const work = mkdtempSync("/tmp/tbj-");
 let finish;
 let ready = false;
+let chrome = null; // Marionette session (chrome context), set once connected.
 const report = new Promise((r) => (finish = r));
 
 const server = createServer((req, res) => {
@@ -34,9 +35,21 @@ const server = createServer((req, res) => {
   req.on("end", () => {
     res.writeHead(200, { "Access-Control-Allow-Origin": "*" });
     if (req.method === "GET") return res.end(ready ? "yes" : "no");
+    let msg;
+    try {
+      msg = JSON.parse(body);
+    } catch {
+      return res.end("ok"); // Ignore preflight / malformed requests.
+    }
+    // Lets the self-test inspect Thunderbird's own UI (e.g. the folder pane).
+    if (msg.type === "chrome") {
+      return chrome
+        .exec(msg.script, msg.args ?? [])
+        .then((value) => res.end(JSON.stringify({ value })))
+        .catch((e) => res.end(JSON.stringify({ error: e.message })));
+    }
     res.end("ok");
     try {
-      const msg = JSON.parse(body);
       if (msg.type === "log") console.log(`  [tb] ${msg.text}`);
       else finish(msg);
     } catch {
@@ -73,20 +86,20 @@ tb.stderr.on("data", (d) => (output += d));
 tb.on("exit", (code) => finish({ crashed: true, code }));
 const timer = setTimeout(() => finish({ timeout: true }), timeoutMs);
 
-if (dovecot) {
-  try {
-    const m = await marionette(marionettePort);
-    const n = await storeImapLogin(m, { host: "127.0.0.1", user: IMAP_USER, password: IMAP_PASSWORD });
+try {
+  chrome = await marionette(marionettePort);
+  if (dovecot) {
+    const n = await storeImapLogin(chrome, { host: "127.0.0.1", user: IMAP_USER, password: IMAP_PASSWORD });
     console.log(`Stored IMAP login via Marionette (${n} login)`);
-    m.close();
-  } catch (e) {
-    finish({ setupError: `Marionette: ${e.message}` });
   }
+  ready = true;
+} catch (e) {
+  finish({ setupError: `Marionette: ${e.message}` });
 }
-ready = true;
 
 const result = await report;
 clearTimeout(timer);
+chrome?.close();
 tb.kill("SIGTERM");
 server.close();
 

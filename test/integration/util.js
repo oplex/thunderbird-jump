@@ -48,8 +48,22 @@ export async function openPalette(windowId) {
   return { win, view, doc: view.document };
 }
 
+// Text of the selectable result rows (headers and hints left out).
 export function rowTexts(p) {
-  return [...p.doc.querySelectorAll("#list li")].map((li) => li.textContent);
+  return [...p.doc.querySelectorAll("#list li.item")].map((li) => li.textContent);
+}
+
+export function headerTexts(p) {
+  return [...p.doc.querySelectorAll("#list li.header")].map((li) => li.textContent);
+}
+
+// Runs `script` (a function body) with chrome privileges via the runner's
+// Marionette session; used only to inspect Thunderbird's own UI.
+export async function chrome(script, args = []) {
+  const res = await fetch(REPORT_URL, { method: "POST", body: JSON.stringify({ type: "chrome", script, args }) });
+  const { value, error } = await res.json();
+  if (error) throw new Error(`chrome script: ${error}`);
+  return value;
 }
 
 export async function type(p, text) {

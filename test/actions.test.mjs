@@ -47,7 +47,12 @@ test("searching and jumping only changes the displayed folder", async () => {
   assert.equal(row.entry.name, "Acme");
   const res = await runAction(row.action, state);
   assert.equal(res.close, true);
-  assert.deepEqual(fake.calls, [["mailTabs.update", 7, row.entry.id]]);
+  // Nested folder: shown, then account row + folder again to re-scroll the pane.
+  assert.deepEqual(fake.calls, [
+    ["mailTabs.update", 7, row.entry.id],
+    ["mailTabs.update", 7, fake.ids.root],
+    ["mailTabs.update", 7, row.entry.id],
+  ]);
   assert.deepEqual(await store.getRecent(), [row.entry.id]);
 });
 
@@ -126,4 +131,68 @@ test("help and unknown commands have no actions", async () => {
   const state = await makeState();
   assert.ok(buildRows("?", state).every((r) => r.action == null));
   assert.equal(buildRows(":zz", state)[0].type, "info");
+});
+
+test("search lists matching recent folders first", async () => {
+  const state = await makeState();
+  const acme = state.folders.find((f) => f.name === "Acme");
+  const clients = state.folders.find((f) => f.name === "Clients");
+  state.recent = [acme.id];
+  const rows = buildRows("c", state);
+  assert.equal(rows[0].type, "header");
+  assert.equal(rows[0].text, "Recent");
+  assert.equal(rows[1].entry.id, acme.id);
+  assert.equal(rows[2].text, "Folders");
+  assert.ok(rows.slice(3).some((r) => r.entry?.id === clients.id));
+});
+
+test("jumping shows a hidden folder pane first, unless turned off", async () => {
+  const state = await makeState();
+  const [row] = buildRows("acme", state);
+  await fake.browser.mailTabs.update(7, { folderPaneVisible: false });
+  fake.calls.length = 0;
+  state.settings.revealFolderPane = false;
+  await runAction(row.action, state);
+  assert.deepEqual(fake.calls, [["mailTabs.update", 7, row.entry.id]]);
+  fake.calls.length = 0;
+  state.settings.revealFolderPane = true;
+  await runAction(row.action, state);
+  // Pane first, then the folder (so Thunderbird can scroll to it).
+  assert.deepEqual(fake.calls.slice(0, 2), [
+    ["mailTabs.update", 7, { folderPaneVisible: true }],
+    ["mailTabs.update", 7, row.entry.id],
+  ]);
+});
+
+test("top-level folders are not re-selected", async () => {
+  const state = await makeState();
+  const [row] = buildRows("inbox", state);
+  fake.calls.length = 0;
+  await runAction(row.action, state);
+  assert.deepEqual(fake.calls, [["mailTabs.update", 7, fake.ids.inbox]]);
+});
+
+test("an exact folder name beats recent folders", async () => {
+  const state = await makeState();
+  const acme = state.folders.find((f) => f.name === "Acme");
+  const clients = state.folders.find((f) => f.name === "Clients");
+  state.recent = [acme.id];
+  const rows = buildRows("clients", state);
+  assert.equal(rows[0].entry.id, clients.id);
+  assert.equal(rows[1].text, "Recent");
+  assert.equal(rows[2].entry.id, acme.id);
+});
+
+test("falls back to the All Folders view when the folder isn't listed", async () => {
+  const state = await makeState();
+  const [row] = buildRows("acme", state);
+  const update = fake.browser.mailTabs.update;
+  const modes = [];
+  fake.browser.mailTabs.update = async (id, props) => {
+    modes.push(props.folderMode);
+    if (modes.length === 1) throw new Error("Requested folder is not viewable in any of the enabled folder modes");
+    return update(id, props);
+  };
+  await runAction(row.action, state);
+  assert.deepEqual(modes.slice(0, 2), [undefined, "all"]);
 });

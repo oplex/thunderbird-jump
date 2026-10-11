@@ -35,8 +35,13 @@ updates the add-on by itself, like any add-on from the official store.
 | `Ctrl+Shift+Space` | Spotlight: a palette centered over the mail window |
 | `Alt+Shift+J` | The same palette as a popup from the toolbar button |
 
-You can change these, and give `j1`–`j5` their own keys, under
-Add-ons Manager → ⚙ → **Manage Extension Shortcuts**.
+To change them, type `:keys` in the palette (or open the add-on's options).
+Click a box and press the new keys. You can also give `j1`–`j5` their own
+keys there, to jump without opening the palette.
+
+When you jump, the folder pane on the left opens if it was hidden. The parent
+folders expand and the pane scrolls to the folder. You can turn this off in
+the options.
 
 ## Typing in the palette
 
@@ -44,6 +49,7 @@ Add-ons Manager → ⚙ → **Manage Extension Shortcuts**.
 | --- | --- |
 | `inv` | Fuzzy-search every folder in every account (recent folders rank higher) |
 | *(empty)* | Your shortcuts and recent folders |
+| *(while searching)* | An exact name match first, then matching recent folders, then the rest |
 | `j1`, `j2` … | Jump to numbered shortcut 1, 2 … |
 | `:j name` | Jump to the shortcut called `name` (`:j` or `:jl` lists them all) |
 | `:jj1`, `:jj name` | Save the **current** folder as shortcut `1` / `name` |
@@ -52,6 +58,7 @@ Add-ons Manager → ⚙ → **Manage Extension Shortcuts**.
 | `:new A/B` | Create `A`, then `B` inside it, in the current folder |
 | `clients > Acme/2026` | Find the parent folder `clients`, create `Acme/2026` inside it |
 | `> Projects` | Create `Projects` at the top level of an account |
+| `:keys` | Change keyboard shortcuts and settings |
 | `?` | Help |
 
 Folders that already exist along a path are reused, so `> A/B` never makes

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Thunderbird Jump",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Spotlight-style folder jumper for Thunderbird: fuzzy search, j1/:j shortcuts, quick folder creation. Never moves or deletes mail.",
   "author": "oplex",
   "browser_specific_settings": {
@@ -15,9 +15,15 @@
     "32": "icons/jump.svg",
     "64": "icons/jump.svg"
   },
-  "permissions": ["accountsRead", "accountsFolders", "storage"],
+  "permissions": [
+    "accountsRead",
+    "accountsFolders",
+    "storage"
+  ],
   "background": {
-    "scripts": ["src/background/background.js"],
+    "scripts": [
+      "src/background/background.js"
+    ],
     "type": "module"
   },
   "action": {
@@ -30,17 +36,31 @@
   },
   "commands": {
     "open-spotlight": {
-      "suggested_key": { "default": "Ctrl+Shift+Space" },
+      "suggested_key": {
+        "default": "Ctrl+Shift+Space"
+      },
       "description": "Open the jump palette centered (spotlight)"
     },
     "_execute_action": {
-      "suggested_key": { "default": "Alt+Shift+J" },
+      "suggested_key": {
+        "default": "Alt+Shift+J"
+      },
       "description": "Open the jump palette from the toolbar button"
     },
-    "jump-1": { "description": "Jump to shortcut j1" },
-    "jump-2": { "description": "Jump to shortcut j2" },
-    "jump-3": { "description": "Jump to shortcut j3" },
-    "jump-4": { "description": "Jump to shortcut j4" },
-    "jump-5": { "description": "Jump to shortcut j5" }
+    "jump-1": {
+      "description": "Jump to shortcut j1"
+    },
+    "jump-2": {
+      "description": "Jump to shortcut j2"
+    },
+    "jump-3": {
+      "description": "Jump to shortcut j3"
+    },
+    "jump-4": {
+      "description": "Jump to shortcut j4"
+    },
+    "jump-5": {
+      "description": "Jump to shortcut j5"
+    }
   }
 }

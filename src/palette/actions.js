@@ -12,7 +12,7 @@ export async function runAction(action, state, { newTab = false } = {}) {
     case "jump": {
       if (!state.byId.has(action.folderId)) throw new Error("That folder no longer exists");
       await pushRecent(action.folderId);
-      await jumpToFolder(action.folderId, state.windowId, { newTab });
+      await jumpToFolder(action.folderId, state.windowId, { newTab, revealPane: state.settings.revealFolderPane });
       return { close: true };
     }
 
@@ -37,11 +37,15 @@ export async function runAction(action, state, { newTab = false } = {}) {
       const where = `${pathLabel(parent)} › ${action.segments.join(" › ")}`;
       if (state.settings.jumpAfterCreate) {
         await pushRecent(folderId);
-        await jumpToFolder(folderId, state.windowId, { newTab });
+        await jumpToFolder(folderId, state.windowId, { newTab, revealPane: state.settings.revealFolderPane });
         return { close: true };
       }
       return { close: false, reload: true, folderId, message: `Created ${where}` };
     }
+
+    case "options":
+      await browser.runtime.openOptionsPage();
+      return { close: true };
 
     default:
       throw new Error(`Unknown action ${action.op}`);

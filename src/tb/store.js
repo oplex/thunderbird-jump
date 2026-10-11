@@ -5,6 +5,7 @@ import { shortcutKey } from "../lib/parse.js";
 export const DEFAULT_SETTINGS = {
   jumpAfterCreate: true,
   closeOnBlur: true,
+  revealFolderPane: true,
   recentLimit: 12,
 };
 

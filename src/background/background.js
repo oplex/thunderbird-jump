@@ -1,7 +1,7 @@
 // Background event page: keyboard commands and the centered "spotlight" window.
 
 import { resolveMailWindowId, jumpToFolder } from "../tb/tabs.js";
-import { getShortcut, pushRecent } from "../tb/store.js";
+import { getShortcut, pushRecent, getSettings } from "../tb/store.js";
 
 const WIDTH = 640;
 const HEIGHT = 460;
@@ -44,7 +44,8 @@ async function jumpToShortcut(name) {
   if (!s) return;
   const windowId = await resolveMailWindowId();
   await pushRecent(s.folderId);
-  await jumpToFolder(s.folderId, windowId);
+  const { revealFolderPane } = await getSettings();
+  await jumpToFolder(s.folderId, windowId, { revealPane: revealFolderPane });
 }
 
 export function handleCommand(command) {

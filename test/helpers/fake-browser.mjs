@@ -35,7 +35,7 @@ export function makeFakeBrowser() {
   const clients = mk("account1", "Clients", inbox.id);
   mk("account1", "Acme", clients.id);
 
-  const tabs = [{ tabId: 7, windowId: 1, active: true, displayedFolder: view(inbox) }];
+  const tabs = [{ tabId: 7, windowId: 1, active: true, folderPaneVisible: true, displayedFolder: view(inbox) }];
   // MV3 only accepts MailFolderIds here (an account's root folder id, not its account id).
   const resolve = (ref) => {
     const f = folders.get(ref);
@@ -45,9 +45,19 @@ export function makeFakeBrowser() {
 
   const browser = {
     accounts: {
+      get: async (id) => {
+        const a = accounts.find((x) => x.id === id);
+        return a && { id: a.id, name: a.name, rootFolder: view(folders.get(a.root)) };
+      },
       list: async (deep) => accounts.map((a) => ({ id: a.id, name: a.name, rootFolder: view(folders.get(a.root), deep) })),
     },
     folders: {
+      get: async (ref) => {
+        const f = resolve(ref);
+        const names = [];
+        for (let x = f; x.parentId; x = folders.get(x.parentId)) names.unshift(x.name);
+        return { ...view(f), path: "/" + names.join("/") };
+      },
       getSubFolders: async (ref, deep) => resolve(ref).children.map((c) => view(folders.get(c), deep)),
       create: async (ref, name) => {
         calls.push(["folders.create", ref, name]);
@@ -57,10 +67,17 @@ export function makeFakeBrowser() {
     },
     mailTabs: {
       query: async (q) => tabs.filter((t) => (q.windowId == null || t.windowId === q.windowId) && (q.active == null || t.active === q.active)),
+      get: async (tabId) => ({ ...tabs.find((t) => t.tabId === tabId) }),
       update: async (tabId, props) => {
-        if (!("displayedFolderId" in props)) throw new Error("MV3 mailTabs.update needs displayedFolderId");
-        calls.push(["mailTabs.update", tabId, props.displayedFolderId]);
-        tabs.find((t) => t.tabId === tabId).displayedFolder = view(folders.get(props.displayedFolderId));
+        const tab = tabs.find((t) => t.tabId === tabId);
+        if ("folderPaneVisible" in props) {
+          calls.push(["mailTabs.update", tabId, { folderPaneVisible: props.folderPaneVisible }]);
+          tab.folderPaneVisible = props.folderPaneVisible;
+        }
+        if ("displayedFolderId" in props) {
+          calls.push(["mailTabs.update", tabId, props.displayedFolderId]);
+          tab.displayedFolder = view(folders.get(props.displayedFolderId));
+        }
       },
       create: async (props) => calls.push(["mailTabs.create", props.displayedFolderId]),
     },

@@ -4,7 +4,7 @@
 import { currentFolderId, jumpToFolder } from "../../src/tb/tabs.js";
 import { saveSettings } from "../../src/tb/store.js";
 import { openSpotlight, handleCommand } from "../../src/background/background.js";
-import { check, assert, waitFor, sleep, byPath, openPalette, isOpen, closed } from "./util.js";
+import { check, assert, waitFor, sleep, byPath, openPalette, isOpen, closed, type, press } from "./util.js";
 
 const paletteWindows = async () =>
   (await browser.windows.getAll({ populate: true })).filter((w) => w.tabs?.some((t) => t.url?.includes("palette.html")));
@@ -62,8 +62,11 @@ export async function uiTests(windowId, root) {
     await browser.windows.remove(win.id);
   });
 
-  await check("options page lists shortcuts", async () => {
-    await browser.runtime.openOptionsPage();
+  await check(":keys in the palette opens the options page, which lists shortcuts", async () => {
+    const p = await openPalette(windowId);
+    await type(p, ":keys");
+    press(p, "Enter");
+    await closed(p);
     const view = await waitFor(
       () => browser.extension.getViews().find((v) => v.location.pathname.endsWith("options.html")),
       "options view",

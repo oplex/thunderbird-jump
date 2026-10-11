@@ -1,6 +1,7 @@
 import { getShortcuts, deleteShortcut, getSettings, saveSettings, clearRecent } from "../tb/store.js";
 import { loadFolders, pathLabel } from "../tb/folders.js";
 import { compareShortcutKeys } from "../lib/parse.js";
+import { renderKeyboard } from "./keyboard.js";
 
 const tbody = document.getElementById("shortcuts");
 
@@ -46,7 +47,7 @@ async function renderShortcuts() {
 
 async function initSettings() {
   const settings = await getSettings();
-  for (const id of ["jumpAfterCreate", "closeOnBlur"]) {
+  for (const id of ["jumpAfterCreate", "closeOnBlur", "revealFolderPane"]) {
     const box = document.getElementById(id);
     box.checked = !!settings[id];
     box.addEventListener("change", () => saveSettings({ [id]: box.checked }));
@@ -59,3 +60,4 @@ async function initSettings() {
 
 renderShortcuts();
 initSettings();
+renderKeyboard();
