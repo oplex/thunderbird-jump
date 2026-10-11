@@ -14,3 +14,8 @@ button { margin-right: 8px; }
 input.shortcut { width: 14em; font-family: ui-monospace, Menlo, Consolas, monospace; cursor: pointer; }
 input.shortcut:focus { outline: 2px solid Highlight; }
 td.ok { color: #2e7d32; }
+.welcome { border: 1px solid color-mix(in srgb, currentColor 25%, transparent); border-radius: 8px; padding: 4px 16px 12px; margin-bottom: 12px; }
+label.file { display: inline-block; cursor: pointer; padding: 1px 8px; border: 1px solid color-mix(in srgb, currentColor 35%, transparent); border-radius: 4px; }
+label.file input { display: none; }
+p.ok, #backupStatus.ok { color: #2e7d32; }
+p.missing, #backupStatus.missing { color: #c62828; }

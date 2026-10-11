@@ -49,6 +49,7 @@ test("query > path creates in searched parent", () => {
 test(":keys opens options", () => {
   assert.deepEqual(parseInput(":keys"), { kind: "options" });
   assert.deepEqual(parseInput(":options"), { kind: "options" });
+  assert.deepEqual(parseInput(":backup"), { kind: "options" });
 });
 
 test("unknown command", () => {

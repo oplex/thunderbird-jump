@@ -10,7 +10,7 @@
 //   :jd name           delete shortcut
 //   :new A/B           create folder path A/B inside the current folder
 //   query > A/B        search a parent folder, create A/B inside it
-//   :keys, :options    open the options page (rebind keyboard shortcuts)
+//   :keys, :backup     open the options page (keys, backup, settings)
 //   ? or :help         help
 
 export function shortcutKey(name) {
@@ -30,7 +30,7 @@ export function parseInput(raw) {
   const t = text.trim();
   if (!t) return { kind: "home" };
   if (t === "?" || /^:h(elp)?$/i.test(t)) return { kind: "help" };
-  if (/^:(keys|options|settings)$/i.test(t)) return { kind: "options" };
+  if (/^:(keys|options|settings|backup|export|import)$/i.test(t)) return { kind: "options" };
 
   let m = /^j(\d+)$/i.exec(t);
   if (m) return { kind: "jump-shortcut", name: m[1] };

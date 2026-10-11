@@ -10,6 +10,7 @@ import { localTests } from "./tests-local.js";
 import { uiTests } from "./tests-ui.js";
 import { imapTests } from "./tests-imap.js";
 import { featureTests } from "./tests-features.js";
+import { welcomeTest, backupTests } from "./tests-backup.js";
 
 // The runner answers "yes" once it has stored the IMAP password.
 async function runnerReady() {
@@ -28,10 +29,12 @@ async function run() {
   const windowId = await resolveMailWindowId();
   await saveSettings({ closeOnBlur: false, jumpAfterCreate: true });
 
+  await welcomeTest();
   const root = await localTests(windowId);
   if (root) {
     await uiTests(windowId, root);
     await featureTests(windowId, root);
+    await backupTests(root);
   }
   else await check("UI tests need the Local Folders account", () => Promise.reject(new Error("no root")));
   if (IMAP_ACCOUNT) await imapTests(windowId, IMAP_ACCOUNT);

@@ -29,6 +29,7 @@ async function apply(name, shortcut, status) {
   try {
     await browser.commands.update({ name, shortcut });
     note(name, status, shortcut ? "Saved" : "Cleared", "ok");
+    browser.runtime.sendMessage({ type: "config-changed" }).catch(() => {});
   } catch (e) {
     note(name, status, e?.message ?? String(e), "missing");
   }
@@ -82,6 +83,7 @@ export async function renderKeyboard() {
       button("Clear", () => apply(cmd.name, "", status).then(renderKeyboard)),
       button("Reset", async () => {
         await browser.commands.reset(cmd.name);
+        browser.runtime.sendMessage({ type: "config-changed" }).catch(() => {});
         notes[cmd.name] = { text: "Reset to default", cls: "ok" };
         renderKeyboard();
       }),

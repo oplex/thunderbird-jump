@@ -2,6 +2,7 @@ import { getShortcuts, deleteShortcut, getSettings, saveSettings, clearRecent } 
 import { loadFolders, pathLabel } from "../tb/folders.js";
 import { compareShortcutKeys } from "../lib/parse.js";
 import { renderKeyboard } from "./keyboard.js";
+import { initBackup } from "./backup-ui.js";
 
 const tbody = document.getElementById("shortcuts");
 
@@ -61,3 +62,11 @@ async function initSettings() {
 renderShortcuts();
 initSettings();
 renderKeyboard();
+// After an import, show the restored shortcuts, settings and keys.
+initBackup(() => {
+  renderShortcuts();
+  renderKeyboard();
+  getSettings().then((s) => {
+    for (const id of ["jumpAfterCreate", "closeOnBlur", "revealFolderPane"]) document.getElementById(id).checked = !!s[id];
+  });
+});

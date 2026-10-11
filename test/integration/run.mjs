@@ -7,7 +7,7 @@
 
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { buildTestXpi, makeProfile } from "./profile.mjs";
 import { findDovecot, startDovecot, freePort, IMAP_USER, IMAP_PASSWORD } from "./imap.mjs";
@@ -69,11 +69,13 @@ const dovecot = dovecotBin ? await startDovecot(dovecotBin, join(work, "dv"), ["
 if (dovecot) console.log(`Dovecot IMAP on 127.0.0.1:${dovecot.port}`);
 
 const xpi = join(work, "addon.xpi");
-const addonId = buildTestXpi(root, join(work, "stage"), xpi, port, dovecot ? IMAP_ACCOUNT : null);
+const downloadDir = join(work, "downloads");
+mkdirSync(downloadDir);
+const addonId = buildTestXpi(root, join(work, "stage"), xpi, port, dovecot ? IMAP_ACCOUNT : null, downloadDir);
 const profile = join(work, "profile");
 const marionettePort = await freePort();
 const imap = dovecot ? { port: dovecot.port, user: IMAP_USER, accountName: IMAP_ACCOUNT } : null;
-makeProfile(profile, xpi, addonId, { imap, marionettePort });
+makeProfile(profile, xpi, addonId, { imap, marionettePort, downloadDir });
 
 console.log(`Starting ${bin} (headless), report port ${port}`);
 const tb = spawn(bin, ["--headless", "--no-remote", "--marionette", "-remote-allow-system-access", "--profile", profile], {
@@ -99,6 +101,26 @@ try {
 
 const result = await report;
 clearTimeout(timer);
+
+// Removing the add-on must leave the automatic backup file behind.
+if (result.tests && chrome) {
+  const backup = join(downloadDir, "thunderbird-jump-backup.json");
+  try {
+    const gone = await chrome.exec(
+      `return (async () => {
+        const { AddonManager } = ChromeUtils.importESModule("resource://gre/modules/AddonManager.sys.mjs");
+        const addon = await AddonManager.getAddonByID(arguments[0]);
+        await addon.uninstall();
+        return !(await AddonManager.getAddonByID(arguments[0]));
+      })();`,
+      [addonId],
+    );
+    const ok = gone && existsSync(backup);
+    result.tests.push({ name: "backup file survives removing the add-on", ok, error: ok ? "" : `uninstalled=${gone} file=${existsSync(backup)}` });
+  } catch (e) {
+    result.tests.push({ name: "backup file survives removing the add-on", ok: false, error: e.message });
+  }
+}
 chrome?.close();
 tb.kill("SIGTERM");
 server.close();

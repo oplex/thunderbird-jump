@@ -24,6 +24,7 @@ export const HELP = [
   ["Ctrl+N", "create a subfolder inside the highlighted folder"],
   ["Shift+Enter", "open the folder in a new tab"],
   [":keys", "change keyboard shortcuts and settings"],
+  [":backup", "export, import or auto-backup your settings"],
 ];
 
 const label = (entry) => entry.segments.join(" › ");
@@ -99,7 +100,7 @@ export function buildRows(input, ctx) {
       return homeRows(ctx);
 
     case "options":
-      return [{ type: "item", icon: "⚙", title: "Open options", detail: "keyboard shortcuts, behaviour, saved shortcuts", action: { op: "options" } }];
+      return [{ type: "item", icon: "⚙", title: "Open options", detail: "keyboard shortcuts, backup, behaviour, saved shortcuts", action: { op: "options" } }];
 
     case "help":
       return HELP.map(([k, v]) => ({ type: "item", icon: "⌨", title: k, detail: v, action: null }));

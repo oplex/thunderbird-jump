@@ -2,6 +2,7 @@
 
 import { resolveMailWindowId, jumpToFolder } from "../tb/tabs.js";
 import { getShortcut, pushRecent, getSettings } from "../tb/store.js";
+import { writeBackupFile, hasDownloadsPermission } from "../tb/backup.js";
 
 const WIDTH = 640;
 const HEIGHT = 460;
@@ -61,6 +62,58 @@ browser.windows.onRemoved.addListener(async (id) => {
   if (current === id) await browser.storage.session.remove("spotlightWindowId");
 });
 
+// Automatic backup file (opt-in): rewritten a moment after shortcuts,
+// settings or keys change. Recent folders ride along but don't trigger it.
+let backupTimer = null;
+
+export async function runAutoBackup() {
+  const { autoBackup } = await getSettings();
+  if (!autoBackup || !(await hasDownloadsPermission())) return false;
+  try {
+    await writeBackupFile();
+    await browser.storage.local.remove("lastBackupError");
+    return true;
+  } catch (e) {
+    await browser.storage.local.set({ lastBackupError: e?.message ?? String(e) });
+    return false;
+  }
+}
+
+function scheduleBackup() {
+  clearTimeout(backupTimer);
+  backupTimer = setTimeout(runAutoBackup, 1500);
+}
+
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && (changes.shortcuts || changes.settings)) scheduleBackup();
+});
+
+// After a fresh install, show the options page with a welcome note (keys to
+// use, and a button to restore a backup from a previous install).
+// On a fresh install Thunderbird may not have a mail window yet, and opening
+// the page then fails, so wait for one (up to a minute).
+async function openWelcome() {
+  for (let i = 0; i < 60; i++) {
+    if ((await browser.mailTabs.query({})).length) {
+      try {
+        await browser.runtime.openOptionsPage();
+        return;
+      } catch {
+        // Window still starting up; try again.
+      }
+    }
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+}
+
+browser.runtime.onInstalled.addListener(async ({ reason }) => {
+  if (reason !== "install") return;
+  await browser.storage.local.set({ showWelcome: true });
+  await openWelcome();
+});
+
 browser.runtime.onMessage.addListener((msg) => {
   if (msg?.type === "open-spotlight") return openSpotlight();
+  if (msg?.type === "config-changed") return scheduleBackup();
+  if (msg?.type === "backup-now") return runAutoBackup();
 });

@@ -28,6 +28,24 @@ Needs Thunderbird **140 ESR** or newer (Manifest V3). Tested against
 That's it. Thunderbird checks this repo's releases for new versions and
 updates the add-on by itself, like any add-on from the official store.
 
+## Backup and moving to another computer
+
+Open the options (type `:backup` in the palette):
+
+- **Export settings…** saves a `.json` file with your saved shortcuts
+  (`j1`, `:j name`), settings, recent folders and key bindings.
+- **Import settings…** restores such a file. Shortcuts are merged in. If the
+  folder IDs differ (another computer, or a new profile), shortcuts are
+  matched by folder path.
+- **Automatic backup** (off by default) keeps
+  `thunderbird-jump-backup.json` in your Downloads folder up to date whenever
+  something changes. It asks for permission to save files the first time.
+
+Thunderbird deletes an add-on's settings when you remove it, and it gives the
+add-on no chance to ask first. The backup file is not deleted, though. When
+you install the add-on again, a welcome page opens with a **Restore from
+backup…** button.
+
 ## Opening it
 
 | Key | What it does |
@@ -59,6 +77,7 @@ the options.
 | `clients > Acme/2026` | Find the parent folder `clients`, create `Acme/2026` inside it |
 | `> Projects` | Create `Projects` at the top level of an account |
 | `:keys` | Change keyboard shortcuts and settings |
+| `:backup` | Export / import settings, automatic backup |
 | `?` | Help |
 
 Folders that already exist along a path are reused, so `> A/B` never makes
@@ -83,6 +102,8 @@ The options page also lists and deletes shortcuts.
 - `accountsRead`: list accounts and folders, show the current folder
 - `accountsFolders`: create folders (only when you ask)
 - `storage`: keep your shortcuts and recent folders
+- `downloads` (optional, asked only if you turn on automatic backup): save
+  the backup file to your Downloads folder
 
 ## Development
 

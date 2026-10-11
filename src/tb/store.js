@@ -6,6 +6,7 @@ export const DEFAULT_SETTINGS = {
   jumpAfterCreate: true,
   closeOnBlur: true,
   revealFolderPane: true,
+  autoBackup: false,
   recentLimit: 12,
 };
 
