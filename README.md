@@ -3,6 +3,13 @@
 A Spotlight-style folder jumper for Thunderbird, in the spirit of Nostalgy.
 Press a key, type a few letters, hit Enter, and you are in the folder.
 
+**Why another one?** Nostalgy and similar add-ons rely on Thunderbird
+internals, so every big Thunderbird release can break them, and you wait for an
+update that may come weeks later or never. Thunderbird Jump uses only the
+official MailExtension APIs. It is small enough to read in an afternoon, and
+its tests run inside real Thunderbird ESR builds. When a new release changes
+something, CI shows it right away and the fix is usually a few lines.
+
 **Read-only by design.** It never moves, copies, deletes or changes messages,
 and never renames or deletes folders. It only changes which folder is shown.
 The one thing it writes is a **new folder**, and only when you ask for one.
@@ -73,7 +80,11 @@ npm run build         # dist/thunderbird-jump-<version>.xpi
 `scripts/fetch-thunderbird.sh`). It then starts it headless with a throwaway
 profile and a Local Folders account, and runs `test/integration/selftest.js`
 inside the add-on. That test types into the real palette, presses keys, and
-checks the folders that were created and the folder that ends up shown. To use
+checks the folders that were created and the folder that ends up shown.
+If Dovecot is installed (`apt install dovecot-imapd`), it also starts a
+throwaway IMAP server and checks jumping and folder creation on a real IMAP
+account, including that the new mailboxes exist on the server. CI always
+runs the IMAP part. To use
 a different build, pass `TB_BIN=/path/to/thunderbird`, or run
 `sh scripts/fetch-thunderbird.sh latest-esr`.
 

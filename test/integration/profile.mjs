@@ -27,25 +27,51 @@ const PREFS = {
   "browser.dom.window.dump.enabled": true,
   "datareporting.policy.dataSubmissionEnabled": false,
   "toolkit.telemetry.reportingpolicy.firstRun": false,
-  // Load the unsigned, side-loaded test build.
-  "xpinstall.signatures.required": false,
+  // Load the side-loaded test build. (No signature pref: Thunderbird accepts
+  // unsigned add-ons by default, which this run also verifies.)
   "extensions.autoDisableScopes": 0,
   "extensions.enabledScopes": 15,
   "extensions.startupScanScopes": 15,
 };
+
+// Adds a plain-IMAP account pointing at the local Dovecot test server.
+function imapPrefs(imap) {
+  return {
+    "mail.accountmanager.accounts": "account1,account2",
+    "mail.account.account2.server": "server2",
+    "mail.account.account2.identities": "id1",
+    "mail.identity.id1.useremail": "test@localhost",
+    "mail.identity.id1.fullName": "Test",
+    "mail.server.server2.type": "imap",
+    "mail.server.server2.hostname": "127.0.0.1",
+    "mail.server.server2.port": imap.port,
+    "mail.server.server2.userName": imap.user,
+    "mail.server.server2.name": imap.accountName,
+    "mail.server.server2.socketType": 0,
+    "mail.server.server2.authMethod": 3,
+    "mail.server.server2.login_at_startup": false,
+    "mail.server.server2.check_new_mail": false,
+    "mail.server.server2.using_subscription": false,
+  };
+}
 
 function prefLine(name, value) {
   return `user_pref(${JSON.stringify(name)}, ${JSON.stringify(value)});`;
 }
 
 // Copy the add-on into `stage`, add the self-test, and zip it to `xpi`.
-export function buildTestXpi(root, stage, xpi, port) {
+export function buildTestXpi(root, stage, xpi, port, imapAccount = null) {
   mkdirSync(stage, { recursive: true });
   cpSync(join(root, "src"), join(stage, "src"), { recursive: true });
   cpSync(join(root, "icons"), join(stage, "icons"), { recursive: true });
   mkdirSync(join(stage, "test/integration"), { recursive: true });
-  cpSync(join(root, "test/integration/selftest.js"), join(stage, "test/integration/selftest.js"));
-  writeFileSync(join(stage, "test/integration/config.js"), `export const REPORT_URL = "http://127.0.0.1:${port}/";\n`);
+  for (const f of ["selftest.js", "util.js", "tests-local.js", "tests-ui.js", "tests-imap.js"]) {
+    cpSync(join(root, "test/integration", f), join(stage, "test/integration", f));
+  }
+  writeFileSync(
+    join(stage, "test/integration/config.js"),
+    `export const REPORT_URL = "http://127.0.0.1:${port}/";\nexport const IMAP_ACCOUNT = ${JSON.stringify(imapAccount)};\n`,
+  );
 
   const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
   manifest.background.scripts.push("test/integration/selftest.js");
@@ -56,8 +82,11 @@ export function buildTestXpi(root, stage, xpi, port) {
   return manifest.browser_specific_settings.gecko.id;
 }
 
-export function makeProfile(dir, xpi, addonId) {
+// `imap`: { port, user, accountName } or null. `marionettePort` enables Marionette.
+export function makeProfile(dir, xpi, addonId, { imap = null, marionettePort = null } = {}) {
   mkdirSync(join(dir, "extensions"), { recursive: true });
   cpSync(xpi, join(dir, "extensions", `${addonId}.xpi`));
-  writeFileSync(join(dir, "user.js"), Object.entries(PREFS).map(([k, v]) => prefLine(k, v)).join("\n") + "\n");
+  const prefs = { ...PREFS, ...(imap ? imapPrefs(imap) : {}) };
+  if (marionettePort) prefs["marionette.port"] = marionettePort;
+  writeFileSync(join(dir, "user.js"), Object.entries(prefs).map(([k, v]) => prefLine(k, v)).join("\n") + "\n");
 }

@@ -47,11 +47,13 @@ async function jumpToShortcut(name) {
   await jumpToFolder(s.folderId, windowId);
 }
 
-browser.commands.onCommand.addListener((command) => {
+export function handleCommand(command) {
   if (command === "open-spotlight") return openSpotlight();
   const m = /^jump-(\d+)$/.exec(command);
   if (m) return jumpToShortcut(m[1]);
-});
+}
+
+browser.commands.onCommand.addListener((command) => handleCommand(command));
 
 browser.windows.onRemoved.addListener(async (id) => {
   const { spotlightWindowId: current } = await browser.storage.session.get("spotlightWindowId");
