@@ -117,7 +117,10 @@ test/             unit tests and the real-Thunderbird integration harness
 sh scripts/release.sh 1.0.1   # bumps the version, commits, tags v1.0.1, pushes
 ```
 
-The tag starts `.github/workflows/release.yml`. It runs the whole CI suite
+Or bump the version in `manifest.json` on `main` and press **Run workflow** on
+the *Release* workflow in the Actions tab; it creates the tag for you.
+
+Either way `.github/workflows/release.yml` runs. It runs the whole CI suite
 (including real Thunderbird + IMAP), then publishes a GitHub release with the
 `.xpi` and `updates.json`. Installed copies pick up the update through
 `update_url` in `manifest.json`.

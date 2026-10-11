@@ -1,10 +1,13 @@
 name: Release
 
-# Push a tag like v1.0.1 (see scripts/release.sh). The full test suite runs
-# first; only then is the release published with the .xpi and updates.json.
+# Either push a tag like v1.0.1 (scripts/release.sh), or press "Run workflow"
+# in the Actions tab to release the version in manifest.json from main. The
+# full test suite runs first; only then is the release published with the
+# .xpi and updates.json (the v<version> tag is created if needed).
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -20,16 +23,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Check tag matches manifest version
+      - name: Work out the release tag
         run: |
           v=$(node -p "require('./manifest.json').version")
-          test "v$v" = "$GITHUB_REF_NAME" || { echo "tag $GITHUB_REF_NAME != manifest $v"; exit 1; }
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "v$v" != "$GITHUB_REF_NAME" ]; then
+            echo "tag $GITHUB_REF_NAME != manifest version $v"; exit 1
+          fi
+          echo "TAG=v$v" >> "$GITHUB_ENV"
       - run: npm run build
       - run: node scripts/make-updates-json.mjs "$GITHUB_REPOSITORY"
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" dist/*.xpi dist/updates.json \
-            --title "Thunderbird Jump $GITHUB_REF_NAME" --generate-notes \
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "$TAG is already released; bump the version first (scripts/release.sh)"; exit 1
+          fi
+          gh release create "$TAG" dist/*.xpi dist/updates.json --target "$GITHUB_SHA" \
+            --title "Thunderbird Jump $TAG" --generate-notes \
             --notes "Install: download the .xpi below, then in Thunderbird open Add-ons and Themes → ⚙ → Install Add-on From File…  Updates install automatically after that."
