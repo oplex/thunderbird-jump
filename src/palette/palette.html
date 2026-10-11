@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Jump to folder</title>
+  <link rel="stylesheet" href="palette.css">
+  <script type="module" src="palette.js"></script>
+</head>
+<body>
+  <div id="palette">
+    <div id="bar">
+      <span id="mode" hidden></span>
+      <input id="input" type="text" autocomplete="off" spellcheck="false"
+             placeholder="Jump to folder…  (j1, :j name, :jj name, query > new, ? help)">
+    </div>
+    <ul id="list" role="listbox"></ul>
+    <div id="footer">
+      <span id="status"></span>
+      <span id="hints">↵ jump · ⇧↵ new tab · ⌃N new subfolder · Alt+1‥9 shortcut · Esc close</span>
+    </div>
+  </div>
+</body>
+</html>

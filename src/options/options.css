@@ -1,0 +1,13 @@
+body {
+  font: 14px/1.4 system-ui, sans-serif;
+  margin: 16px;
+  max-width: 720px;
+}
+h2 { font-size: 16px; margin: 20px 0 6px; }
+.dim { color: GrayText; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 4px 8px; border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent); }
+td.name { font-family: ui-monospace, Menlo, Consolas, monospace; white-space: nowrap; }
+td.missing { color: #c62828; }
+label { display: block; margin: 4px 0; }
+button { margin-right: 8px; }

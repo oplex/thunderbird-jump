@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Thunderbird Jump options</title>
+  <link rel="stylesheet" href="options.css">
+  <script type="module" src="options.js"></script>
+</head>
+<body>
+  <h2>Shortcuts</h2>
+  <p class="dim">Set from the palette with <code>:jj1</code> or <code>:jj name</code>; jump with <code>j1</code> or <code>:j name</code>.</p>
+  <table>
+    <thead><tr><th>Name</th><th>Folder</th><th></th></tr></thead>
+    <tbody id="shortcuts"></tbody>
+  </table>
+
+  <h2>Behaviour</h2>
+  <label><input type="checkbox" id="jumpAfterCreate"> Jump to a folder right after creating it</label>
+  <label><input type="checkbox" id="closeOnBlur"> Close the spotlight window when it loses focus</label>
+  <p>
+    <button id="clearRecent">Clear recent folders</button>
+    <button id="openSpotlight">Open spotlight</button>
+  </p>
+
+  <h2>Keyboard</h2>
+  <p class="dim">
+    Defaults: <kbd>Ctrl+Shift+Space</kbd> spotlight, <kbd>Alt+Shift+J</kbd> toolbar popup.
+    Change them (and bind direct keys for j1–j5) in Add-ons Manager → ⚙ → Manage Extension Shortcuts.
+  </p>
+</body>
+</html>

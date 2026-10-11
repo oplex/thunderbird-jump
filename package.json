@@ -1,0 +1,14 @@
+{
+  "name": "thunderbird-jump",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Spotlight-style folder jumper for Thunderbird",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check-lines": "node scripts/check-lines.mjs",
+    "lint": "npx --yes web-ext@8.3.0 lint --self-hosted --ignore-files 'test/**' 'scripts/**' 'dist/**' 'package.json' 'README.md'",
+    "build": "sh scripts/build.sh",
+    "test:tb": "TB_BIN=${TB_BIN:-$(sh scripts/fetch-thunderbird.sh)} node test/integration/run.mjs"
+  }
+}

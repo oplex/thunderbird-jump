@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm run check-lines
+      - run: npm test
+      - run: npm run lint
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: thunderbird-jump-xpi
+          path: dist/*.xpi
+
+  thunderbird:
+    # Runs the add-on inside real headless Thunderbird ESR builds.
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [140.7.1esr, latest-esr]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Thunderbird runtime libraries
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-0 libdbus-glib-1-2 libasound2t64 libx11-xcb1
+      - name: Download Thunderbird ${{ matrix.version }}
+        run: echo "TB_BIN=$(sh scripts/fetch-thunderbird.sh ${{ matrix.version }})" >> "$GITHUB_ENV"
+      - run: node test/integration/run.mjs
