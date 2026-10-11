@@ -17,6 +17,17 @@ The one thing it writes is a **new folder**, and only when you ask for one.
 Needs Thunderbird **140 ESR** or newer (Manifest V3). Tested against
 140.7.1esr and the latest 140.x ESR.
 
+## Install
+
+1. Download `thunderbird-jump-<version>.xpi` from the
+   [latest release](https://github.com/oplex/thunderbird-jump/releases/latest).
+2. In Thunderbird open **Add-ons and Themes** (Tools menu, or `Ctrl+Shift+A`).
+3. Click ⚙ → **Install Add-on From File…** and choose the `.xpi`.
+   (Or drag the `.xpi` onto the Add-ons page.)
+
+That's it. Thunderbird checks this repo's releases for new versions and
+updates the add-on by itself, like any add-on from the official store.
+
 ## Opening it
 
 | Key | What it does |
@@ -100,7 +111,13 @@ src/options/      options page
 test/             unit tests and the real-Thunderbird integration harness
 ```
 
-Install a build: Add-ons Manager → ⚙ → **Install Add-on From File…** →
-choose the `.xpi` from `dist/`. It is unsigned, so in release Thunderbird you
-may need `xpinstall.signatures.required = false`, or load it temporarily from
-Debug Add-ons.
+### Releasing
+
+```sh
+sh scripts/release.sh 1.0.1   # bumps the version, commits, tags v1.0.1, pushes
+```
+
+The tag starts `.github/workflows/release.yml`. It runs the whole CI suite
+(including real Thunderbird + IMAP), then publishes a GitHub release with the
+`.xpi` and `updates.json`. Installed copies pick up the update through
+`update_url` in `manifest.json`.
