@@ -6,11 +6,16 @@ name: Website
 on:
   push:
     branches: [main]
-    paths: ["site/**", "listing/**", ".github/workflows/pages.yml"]
+    paths: ["site/**", "listing/**", "scripts/site-status.mjs", ".github/workflows/pages.yml"]
+  # Refresh the test status shown on the site after every test run.
+  workflow_run:
+    workflows: ["CI", "Compatibility", "Release"]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -31,6 +36,13 @@ jobs:
           mkdir -p _site/img
           cp -r site/* _site/
           cp listing/*.png _site/img/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Latest test results and releases
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/site-status.mjs _site/status.json || echo '{}' > _site/status.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

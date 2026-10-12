@@ -114,6 +114,12 @@ table.compare { width: 100%; border-collapse: collapse; min-width: 760px; font-s
 .no { color: var(--no); }
 .note { display: block; font-size: 13px; color: var(--dim); }
 
+/* Test status */
+table.tested { min-width: 0; }
+.tested tbody th { width: auto; }
+.fail { color: #c62828; font-weight: 600; }
+ul.releases { padding-left: 20px; margin: 8px 0 0; }
+
 /* FAQ */
 details { border-bottom: 1px solid var(--line); padding: 14px 0; }
 summary { cursor: pointer; font-weight: 600; }

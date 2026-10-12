@@ -14,6 +14,7 @@
   <meta property="og:image" content="https://oplex.github.io/thunderjump/img/3-palette.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="style.css">
+  <script src="status.js" defer></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -36,7 +37,7 @@
       <a class="brand" href="./"><img src="img/icon-64.png" alt="">ThunderJump</a>
       <nav>
         <a class="hide-sm" href="#features">Features</a>
-        <a class="hide-sm" href="#keys">Keys</a>
+        <a class="hide-sm" href="#tested">Tested</a>
         <a href="nostalgy-alternative.html">vs Nostalgy</a>
         <a href="https://github.com/oplex/thunderjump">GitHub</a>
       </nav>
@@ -117,7 +118,21 @@
       </div>
     </section>
 
-    <section class="soft">
+    <section id="tested" class="soft">
+      <div class="wrap">
+        <h2>Tested on every Thunderbird</h2>
+        <p class="intro">Every change runs the full test suite inside real Thunderbird builds, and once a week on the newest release of every major version since 91. These are the latest results, straight from GitHub Actions.</p>
+        <p>
+          <a href="https://github.com/oplex/thunderjump/actions/workflows/ci.yml"><img src="https://github.com/oplex/thunderjump/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status" height="20" style="display:inline"></a>
+          <a href="https://github.com/oplex/thunderjump/actions/workflows/compat.yml"><img src="https://github.com/oplex/thunderjump/actions/workflows/compat.yml/badge.svg" alt="Compatibility status" height="20" style="display:inline"></a>
+        </p>
+        <div id="testStatus"><p class="small">See the latest runs on <a href="https://github.com/oplex/thunderjump/actions">GitHub Actions</a>.</p></div>
+        <h3 style="margin-top:28px">Versions</h3>
+        <div id="releaseList"><p class="small"><a href="https://github.com/oplex/thunderjump/releases">All releases and what changed</a></p></div>
+      </div>
+    </section>
+
+    <section>
       <div class="wrap">
         <h2>Install</h2>
         <ol class="steps">
