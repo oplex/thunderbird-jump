@@ -43,16 +43,16 @@ and every week on **the newest release of every major version from 91 up**
 (`.github/workflows/compat.yml`), so new Thunderbird releases are tested as
 soon as they come out.
 
-| Thunderbird | File | Tested |
+| Thunderbird | File to install | Status |
 | --- | --- | --- |
-| 157 (latest release), 154–156 | `thunderjump-…xpi` | 157.0.1: 34/34 here + CI on every change. Others: weekly CI |
-| 153 ESR | `thunderjump-…xpi` | 153.4.0esr: 34/34 here + CI on every change |
-| 140 ESR – 152 | `thunderjump-…xpi` | 140.7.1esr: 34/34 here + CI on every change. Others: weekly CI |
-| 128 ESR – 139 | `…-tb91-139.xpi` | 125.0, 128.14.0esr, 139.0.2: 34/34 here. All: weekly CI |
-| 115 ESR | `…-tb91-139.xpi` | 115.5.1: 34/34 here + CI on every change; 115.18.0 weekly CI |
-| 102 ESR | `…-tb91-139.xpi` | 102.15.1: 34/34 here, weekly CI |
-| 91 ESR | `…-tb91-139.xpi` | 91.13.1: 34/34 here + CI on every change |
-| 78 and older | – | Not supported (missing APIs the add-on needs) |
+| 140 – 157 (incl. 140 ESR, 153 ESR, latest release) | `thunderjump-<version>.xpi` | ✅ all versions pass the full suite |
+| 91 – 139 (incl. 91, 102, 115, 128 ESR) | `thunderjump-<version>-tb91-139.xpi` | ✅ all versions pass the full suite |
+| 78 and older | – | ❌ not supported (missing APIs the add-on needs) |
+
+Last full run: October 2026, the newest release of all 35 major versions from
+91.13.1 to 157.0.1 passed 34/34 (see the *Compatibility* workflow under
+Actions). On every change, CI also runs 157 (latest release), 153 ESR
+(latest ESR), 140.7.1esr, 115.5.1 and 91.13.1.
 
 Also confirmed by hand on a real desktop: the latest Thunderbird release.
 Please open an issue with your Thunderbird version if something doesn't work.
