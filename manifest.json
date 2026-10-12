@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ThunderJump",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "Spotlight-style folder jumper: press a key, type a few letters, Enter. Shortcuts, quick folder creation, optional message moving with undo, and a Manager page with faceted search.",
   "author": "oplex.se",
   "browser_specific_settings": {
@@ -12,10 +12,12 @@
     }
   },
   "icons": {
-    "16": "icons/thunderjump.svg",
-    "32": "icons/thunderjump.svg",
-    "64": "icons/thunderjump.svg",
-    "128": "icons/thunderjump.svg"
+    "16": "icons/thunderjump-16.png",
+    "32": "icons/thunderjump-32.png",
+    "48": "icons/thunderjump-48.png",
+    "64": "icons/thunderjump-64.png",
+    "96": "icons/thunderjump-96.png",
+    "128": "icons/thunderjump-128.png"
   },
   "permissions": [
     "accountsRead",

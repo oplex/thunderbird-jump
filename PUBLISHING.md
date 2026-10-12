@@ -107,8 +107,10 @@ on ATN, once for each file.
 - optional `downloads`: only for the opt-in automatic backup file
 
 **Icon and screenshots:** ready in [`listing/`](listing/) with captions.
-Upload them under **Edit Listing → Media** after submitting the first
-version.
+ATN has no API for the listing page (icon, screenshots, description), so
+these are set once by hand under **Edit Listing → Media**; new versions keep
+them. The add-on file itself carries PNG icons (16–128 px), which ATN and
+Thunderbird use directly.
 
 ## Notes
 
