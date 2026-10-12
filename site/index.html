@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ThunderJump – jump to any Thunderbird folder from the keyboard</title>
+  <meta name="description" content="ThunderJump is a free, open-source Thunderbird add-on: press a key, type a few letters, and you are in the folder. Fuzzy folder search, j1/j2 shortcuts, quick folder creation, message moving with undo. A Nostalgy alternative for Thunderbird 91 to 157.">
+  <link rel="canonical" href="https://oplex.github.io/thunderjump/">
+  <link rel="icon" type="image/png" href="img/icon-64.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ThunderJump – jump to any Thunderbird folder from the keyboard">
+  <meta property="og:description" content="Spotlight-style folder jumper for Thunderbird. Free, open source, works with Thunderbird 91 to the latest release.">
+  <meta property="og:url" content="https://oplex.github.io/thunderjump/">
+  <meta property="og:image" content="https://oplex.github.io/thunderjump/img/3-palette.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "ThunderJump",
+    "description": "Spotlight-style folder jumper for Thunderbird: fuzzy folder search, shortcuts, quick folder creation, message moving with undo and a faceted mail search page.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Windows, macOS, Linux (Thunderbird 91 or newer)",
+    "url": "https://oplex.github.io/thunderjump/",
+    "downloadUrl": "https://addons.thunderbird.net/thunderbird/addon/thunderjump/",
+    "license": "https://opensource.org/licenses/MIT",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": { "@type": "Organization", "name": "oplex.se", "url": "https://oplex.se" }
+  }
+  </script>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="./"><img src="img/icon-64.png" alt="">ThunderJump</a>
+      <nav>
+        <a class="hide-sm" href="#features">Features</a>
+        <a class="hide-sm" href="#keys">Keys</a>
+        <a href="nostalgy-alternative.html">vs Nostalgy</a>
+        <a href="https://github.com/oplex/thunderjump">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero wrap">
+      <img class="logo" src="img/icon-128.png" alt="ThunderJump logo" width="96" height="96">
+      <h1>Jump to any Thunderbird folder<br class="hide-sm"> in a keystroke</h1>
+      <p class="lead">Press <kbd>Ctrl+Shift+Space</kbd>, type a few letters, press Enter. ThunderJump opens the folder and scrolls the folder pane to it, across every account.</p>
+      <div class="buttons">
+        <a class="btn primary" href="https://addons.thunderbird.net/thunderbird/addon/thunderjump/">Add to Thunderbird – free</a>
+        <a class="btn" href="https://github.com/oplex/thunderjump/releases/latest">Download from GitHub</a>
+      </div>
+      <p class="small">Free and open source (MIT) · Thunderbird 91 to the latest release · No data collection</p>
+      <div class="shot"><img src="img/1-manager.png" alt="ThunderJump Manager: search mail with filters and facets, then move in bulk" width="1280" height="800"></div>
+    </div>
+
+    <section id="features" class="soft">
+      <div class="wrap">
+        <h2>Everything for folders, nothing in your way</h2>
+        <p class="intro">If you have dozens or hundreds of folders, scrolling the folder tree wastes minutes every day. ThunderJump replaces it with a search box that answers instantly.</p>
+        <div class="grid">
+          <div class="card"><div class="ico">⚡</div><h3>Fuzzy folder search</h3><p>Type <code>inv24</code> to find <em>Invoices › 2024</em>. Every account, recent folders first.</p></div>
+          <div class="card"><div class="ico">🔢</div><h3>Shortcuts</h3><p>Save a folder as <code>j1</code> or a name with <code>:jj work</code>; jump back with <code>j1</code> or <code>:j work</code>, or Alt+1…9.</p></div>
+          <div class="card"><div class="ico">📁</div><h3>Create folders on the fly</h3><p><code>clients &gt; Acme/2026</code> finds the parent and creates the path. Date patterns like <code>{YYYY}/{MM}</code> work too.</p></div>
+          <div class="card"><div class="ico">📨</div><h3>Move messages, with undo</h3><p>Select mail, press <kbd>Alt+Shift+M</kbd> or type <code>move inv</code>. Optional confirm step; <kbd>Ctrl+Z</kbd> puts them back.</p></div>
+          <div class="card"><div class="ico">🔍</div><h3>ThunderJump Manager</h3><p>A full page to search mail with facets (folder, sender, year), then move results in bulk or by drag and drop.</p></div>
+          <div class="card"><div class="ico">🖱️</div><h3>Right-click a folder</h3><p>Save it as j1…j9 or a named shortcut, make a subfolder, or search its messages.</p></div>
+          <div class="card"><div class="ico">⌨️</div><h3>Your keys</h3><p>Rebind every shortcut in the settings, including plain function keys like <kbd>F2</kbd>.</p></div>
+          <div class="card"><div class="ico">🪶</div><h3>Light and fast</h3><p>About 70 KB, no Experiment APIs. Lite mode opens the spotlight in about 20 ms.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <h2>See it</h2>
+        <div class="shots">
+          <figure><img src="img/3-palette.png" alt="The ThunderJump palette with shortcuts and recent folders" width="640" height="460" loading="lazy"><figcaption>The palette: shortcuts, recent folders, type to jump.</figcaption></figure>
+          <figure><img src="img/4-palette-move.png" alt="Move mode showing the selected messages and target folders" width="640" height="460" loading="lazy"><figcaption>Move mode shows what you are moving; Ctrl+Z undoes.</figcaption></figure>
+          <figure><img src="img/2-manager-move-to.png" alt="Picking a target folder by typing in the Manager" width="1280" height="800" loading="lazy"><figcaption>Move to…: pick the target by typing a few letters.</figcaption></figure>
+          <figure><img src="img/5-manager-dark.png" alt="ThunderJump Manager in dark mode" width="1280" height="800" loading="lazy"><figcaption>Follows Thunderbird's dark mode.</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="keys" class="soft">
+      <div class="wrap">
+        <h2>Keys and commands</h2>
+        <p class="intro">Defaults below; change any of them in the settings (type <code>:keys</code>).</p>
+        <table class="keys">
+          <tr><td><kbd>Ctrl+Shift+Space</kbd></td><td>Open the spotlight palette</td></tr>
+          <tr><td><kbd>Alt+Shift+M</kbd></td><td>Move the selected messages</td></tr>
+          <tr><td><kbd>Alt+Shift+Z</kbd></td><td>Undo the last move</td></tr>
+          <tr><td><kbd>Alt+Shift+F</kbd></td><td>ThunderJump Manager</td></tr>
+          <tr><td><code>j1</code> · <code>:j name</code></td><td>Jump to a shortcut</td></tr>
+          <tr><td><code>:jj1</code> · <code>:jj name</code></td><td>Save the current folder as a shortcut</td></tr>
+          <tr><td><code>parent &gt; New/Sub</code></td><td>Create folders inside a searched parent</td></tr>
+          <tr><td><code>move inv</code></td><td>Move the selected messages to a folder matching “inv”</td></tr>
+          <tr><td><code>:s invoice</code></td><td>Search mail in the current folder (<code>:sa</code> = all folders)</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <h2>Built to keep working</h2>
+        <p class="intro">Folder add-ons that reach into Thunderbird's internals often break when Thunderbird updates, and you wait for a fix. ThunderJump uses only the official MailExtension APIs, and every change is tested inside real Thunderbird builds: 91, 115, 140, the latest ESR and the latest release, plus a weekly run over every major version since 91.</p>
+        <div class="grid">
+          <div class="card"><h3>Safe by default</h3><p>Out of the box it only reads folders and changes which one is shown. Moving mail is off until you turn it on, and every move can be undone.</p></div>
+          <div class="card"><h3>Private</h3><p>No network requests, no tracking. Settings and shortcuts stay in your Thunderbird profile; export them any time.</p></div>
+          <div class="card"><h3>Open source</h3><p>MIT licensed, small enough to read in an afternoon. <a href="https://github.com/oplex/thunderjump">Source on GitHub</a>.</p></div>
+        </div>
+        <p style="margin-top:28px">Coming from Nostalgy, Nostalgy++, Quick Folder Move or QuickFolders? <a href="nostalgy-alternative.html">See the honest comparison →</a></p>
+      </div>
+    </section>
+
+    <section class="soft">
+      <div class="wrap">
+        <h2>Install</h2>
+        <ol class="steps">
+          <li><strong>Recommended:</strong> in Thunderbird open <em>Add-ons and Themes</em>, search for <strong>ThunderJump</strong>, and click <em>Add to Thunderbird</em>, or use the <a href="https://addons.thunderbird.net/thunderbird/addon/thunderjump/">ThunderJump page on addons.thunderbird.net</a>.</li>
+          <li>Or download the <code>.xpi</code> from <a href="https://github.com/oplex/thunderjump/releases/latest">GitHub releases</a> (one file for Thunderbird 140+, one for 91–139) and use <em>⚙ → Install Add-on From File…</em></li>
+          <li>Press <kbd>Ctrl+Shift+Space</kbd> and start typing.</li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 <a href="https://oplex.se">oplex.se</a> · MIT License</span>
+      <a href="nostalgy-alternative.html">Nostalgy alternative</a>
+      <a href="https://github.com/oplex/thunderjump/issues">Report a problem</a>
+      <a href="https://github.com/oplex/thunderjump">Source code</a>
+      <span>Thunderbird is a trademark of the Mozilla Foundation; ThunderJump is not affiliated with it.</span>
+    </div>
+  </footer>
+</body>
+</html>

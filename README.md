@@ -5,6 +5,10 @@
 A Spotlight-style folder jumper for Thunderbird, in the spirit of Nostalgy.
 Press a key, type a few letters, hit Enter, and you are in the folder.
 
+**Website:** <https://oplex.github.io/thunderjump/> ·
+[Nostalgy alternative: comparison](https://oplex.github.io/thunderjump/nostalgy-alternative.html) ·
+[Add to Thunderbird](https://addons.thunderbird.net/thunderbird/addon/thunderjump/)
+
 **Why another one?** Nostalgy and similar add-ons rely on Thunderbird
 internals, so every big Thunderbird release can break them, and you wait for an
 update that may come weeks later or never. ThunderJump uses only the official

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nostalgy alternative for Thunderbird 140, 128 and 115 – ThunderJump vs Nostalgy++, Quick Folder Move, QuickFolders</title>
+  <meta name="description" content="Looking for a Nostalgy alternative for Thunderbird? A fact-checked comparison of ThunderJump, Nostalgy++, Quick Folder Move and QuickFolders: Thunderbird versions, Experiment APIs, price, license, folder jumping, moving, undo and search.">
+  <link rel="canonical" href="https://oplex.github.io/thunderjump/nostalgy-alternative.html">
+  <link rel="icon" type="image/png" href="img/icon-64.png">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Nostalgy alternative for Thunderbird – an honest comparison">
+  <meta property="og:description" content="ThunderJump vs Nostalgy++, Quick Folder Move and QuickFolders, with sources.">
+  <meta property="og:url" content="https://oplex.github.io/thunderjump/nostalgy-alternative.html">
+  <meta property="og:image" content="https://oplex.github.io/thunderjump/img/3-palette.png">
+  <link rel="stylesheet" href="style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "Does Nostalgy work with Thunderbird 140?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The original Nostalgy (version 0.3) supports Thunderbird 68 to 73 only and was last updated in February 2020. Nostalgy++ is a maintained port; its current version on addons.thunderbird.net supports Thunderbird 128 to 157." } },
+      { "@type": "Question", "name": "What is a Nostalgy alternative that keeps working after Thunderbird updates?",
+        "acceptedAnswer": { "@type": "Answer", "text": "ThunderJump uses only the official MailExtension APIs (no Experiment APIs) and has no upper Thunderbird version limit. It is tested in real Thunderbird builds from 91 to the latest release." } },
+      { "@type": "Question", "name": "Can ThunderJump use single-letter keys like Nostalgy's G and S?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Thunderbird lets MailExtensions register keys with Ctrl or Alt, or function keys on their own. You can set ThunderJump to Alt+G or F2, for example; plain letters are not available to add-ons that use only official APIs." } }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="./"><img src="img/icon-64.png" alt="">ThunderJump</a>
+      <nav>
+        <a class="hide-sm" href="./#features">Features</a>
+        <a href="#table">Comparison</a>
+        <a href="https://github.com/oplex/thunderjump">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero wrap">
+      <h1>A Nostalgy alternative for today's Thunderbird</h1>
+      <p class="lead">Nostalgy made Thunderbird fast for keyboard users: type a few letters, land in a folder, file a message. The original stopped at Thunderbird 73. Here is how the add-ons that do this job today compare, with sources.</p>
+      <div class="buttons">
+        <a class="btn primary" href="https://addons.thunderbird.net/thunderbird/addon/thunderjump/">Try ThunderJump – free</a>
+        <a class="btn" href="#table">Jump to the table</a>
+      </div>
+    </div>
+
+    <section id="table" class="soft">
+      <div class="wrap">
+        <h2>Side by side</h2>
+        <p class="intro">Figures from addons.thunderbird.net and each add-on's own files and listing, checked on 12 October 2026. “Not listed” means the add-on's listing doesn't mention it, not that it is impossible. Corrections welcome on <a href="https://github.com/oplex/thunderjump/issues">GitHub</a>.</p>
+        <div class="table-scroll">
+          <table class="compare">
+            <thead>
+              <tr><th></th><th class="us">ThunderJump 1.8</th><th>Nostalgy++ 5.2.10</th><th>Quick Folder Move 3.3.0</th><th>QuickFolders 6.18.1</th></tr>
+            </thead>
+            <tbody>
+              <tr class="group"><th colspan="5">Basics</th></tr>
+              <tr><th>Price</th><td class="us">Free</td><td>Free</td><td>Free</td><td>Free basic version; full features with a yearly license ($6 Standard, $15 Pro)</td></tr>
+              <tr><th>License</th><td class="us">MIT (open source)</td><td>CC BY-ND 4.0</td><td>MPL 2.0 (open source)</td><td>CC BY-ND 4.0</td></tr>
+              <tr><th>Thunderbird versions (current release on ATN)</th><td class="us"><span class="yes">91 → any newer</span><span class="note">two builds: 91–139 and 140+, no upper limit</span></td><td>128 – 157</td><td>128 – 158</td><td>140 – 159</td></tr>
+              <tr><th>Experiment APIs (deep access to Thunderbird internals)</th><td class="us"><span class="yes">None</span><span class="note">official APIs only</span></td><td>4</td><td>1</td><td>4</td></tr>
+              <tr><th>Download size</th><td class="us">≈ 70 KB</td><td>511 KB</td><td>498 KB</td><td>1.3 MB</td></tr>
+              <tr><th>Last update</th><td class="us">12 Oct 2026</td><td>9 Sep 2026</td><td>23 Jun 2025</td><td>6 Oct 2026</td></tr>
+
+              <tr class="group"><th colspan="5">Getting to folders</th></tr>
+              <tr><th>Jump to a folder by typing</th><td class="us"><span class="yes">✓</span> fuzzy, all accounts</td><td><span class="yes">✓</span> name completion</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span> quickJump</td></tr>
+              <tr><th>Recent folders first</th><td class="us"><span class="yes">✓</span></td><td class="no">not listed</td><td><span class="yes">✓</span></td><td class="no">not listed</td></tr>
+              <tr><th>Folder shortcuts (j1, named)</th><td class="us"><span class="yes">✓</span> j1–j9, any name, own keys</td><td>via the separate Text Insert add-on</td><td class="no">not listed</td><td><span class="yes">✓</span> bookmarked folder tabs</td></tr>
+              <tr><th>Create folders while jumping or moving</th><td class="us"><span class="yes">✓</span> nested paths, date patterns</td><td class="no">not listed</td><td class="no">not listed</td><td><span class="yes">✓</span></td></tr>
+              <tr><th>Folder tab bar</th><td class="us no">–</td><td class="no">–</td><td class="no">–</td><td><span class="yes">✓</span> with categories</td></tr>
+
+              <tr class="group"><th colspan="5">Filing messages</th></tr>
+              <tr><th>Move by keyboard</th><td class="us"><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+              <tr><th>Copy</th><td class="us no">not yet</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+              <tr><th>Undo a move</th><td class="us"><span class="yes">✓</span> Ctrl+Z, move history</td><td class="no">not listed</td><td class="no">not listed</td><td class="no">not listed</td></tr>
+              <tr><th>Rules / suggested folders</th><td class="us no">–</td><td><span class="yes">✓</span> rules, learned suggestions</td><td class="no">–</td><td class="no">–</td></tr>
+              <tr><th>Tags</th><td class="us no">–</td><td class="no">–</td><td><span class="yes">✓</span></td><td class="no">–</td></tr>
+
+              <tr class="group"><th colspan="5">Searching mail</th></tr>
+              <tr><th>Search page</th><td class="us"><span class="yes">✓</span> facets (folder, sender, year), bulk move, drag and drop</td><td><span class="yes">✓</span> Search++ tab</td><td class="no">–</td><td class="no">–</td></tr>
+
+              <tr class="group"><th colspan="5">Keys</th></tr>
+              <tr><th>Default keys</th><td class="us">Ctrl+Shift+Space, Alt+Shift+M</td><td>Alt+G, Alt+S, Alt+C, …</td><td>Ctrl+Shift+N</td><td>Ctrl+Q, F10</td></tr>
+              <tr><th>Rebind keys</th><td class="us"><span class="yes">✓</span> own settings page</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <h2>Why the “Experiment APIs” row matters</h2>
+        <p class="intro">Experiment APIs let an add-on reach directly into Thunderbird's own code. That allows features the official API doesn't offer, but Thunderbird changes that code often, so these add-ons cap the Thunderbird versions they accept and need a new release after many Thunderbird updates. The add-ons' own listings describe this:</p>
+        <div class="grid">
+          <div class="card"><h3>Nostalgy++</h3><p>Its listing points users of Thunderbird 153/155 to a <a href="https://github.com/opto/nostalgy-xpi/releases">GitHub download</a> while the version on addons.thunderbird.net catches up.</p></div>
+          <div class="card"><h3>QuickFolders</h3><p>Its listing has a “Thunderbird 143 problems” note about a new version awaiting review and a false incompatibility warning after an update.</p></div>
+          <div class="card"><h3>ThunderJump</h3><p>Uses only official MailExtension APIs, declares no upper version limit, and runs its test suite inside real Thunderbird builds, from 91 up to the newest release, on every change.</p></div>
+        </div>
+        <p class="small" style="margin-top:20px">This is a trade-off, not a verdict: Experiment APIs are how Nostalgy++ offers rules and QuickFolders its tab bar, which official APIs can't do today.</p>
+      </div>
+    </section>
+
+    <section class="soft">
+      <div class="wrap">
+        <h2>Which one should you use?</h2>
+        <div class="grid">
+          <div class="card"><h3>ThunderJump</h3><p>You want a fast keyboard jumper with shortcuts, folder creation, undoable moves and a search page, that keeps working after Thunderbird updates.</p></div>
+          <div class="card"><h3>Nostalgy++</h3><p>You rely on rules and learned folder suggestions, or Nostalgy's classic key set.</p></div>
+          <div class="card"><h3>Quick Folder Move</h3><p>You mainly need move, copy and tag from one small popup.</p></div>
+          <div class="card"><h3>QuickFolders</h3><p>You prefer a visible bar of favorite folders as tabs, with categories.</p></div>
+        </div>
+        <p style="margin-top:24px">They can be installed side by side, so trying ThunderJump costs nothing: <a href="https://addons.thunderbird.net/thunderbird/addon/thunderjump/">install it</a>, press <kbd>Ctrl+Shift+Space</kbd>, and type.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <h2>Coming from Nostalgy</h2>
+        <table class="keys">
+          <tr><td>Nostalgy <kbd>G</kbd> (go to folder)</td><td>ThunderJump <kbd>Ctrl+Shift+Space</kbd>, type, Enter</td></tr>
+          <tr><td>Nostalgy <kbd>S</kbd> (move)</td><td><kbd>Alt+Shift+M</kbd>, or type <code>move name</code> in the palette</td></tr>
+          <tr><td>Saved folder shortcuts</td><td><code>:jj1</code> / <code>:jj name</code> to save, <code>j1</code> / <code>:j name</code> to jump, Alt+1…9</td></tr>
+          <tr><td>Single-letter keys</td><td>Thunderbird only gives official-API add-ons keys with Ctrl/Alt or function keys alone. Set Alt+G, F2 or similar under <code>:keys</code>.</td></tr>
+        </table>
+        <p class="small" style="margin-top:18px">Sources: addons.thunderbird.net pages for <a href="https://addons.thunderbird.net/thunderbird/addon/nostalgy/">Nostalgy</a>, <a href="https://addons.thunderbird.net/thunderbird/addon/nostalgy_ng/">Nostalgy++</a>, <a href="https://addons.thunderbird.net/thunderbird/addon/quick-folder-move/">Quick Folder Move</a>, <a href="https://addons.thunderbird.net/thunderbird/addon/quickfolders-tabbed-folders/">QuickFolders</a> and their public API data; Experiment API counts and default keys from each add-on's manifest; QuickFolders prices from its <a href="https://sites.fastspring.com/quickfolders">license store</a>.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 <a href="https://oplex.se">oplex.se</a> · MIT License</span>
+      <a href="./">ThunderJump home</a>
+      <a href="https://github.com/oplex/thunderjump">Source code</a>
+      <span>Nostalgy, Nostalgy++, Quick Folder Move and QuickFolders belong to their authors. Thunderbird is a trademark of the Mozilla Foundation; ThunderJump is not affiliated with either.</span>
+    </div>
+  </footer>
+</body>
+</html>

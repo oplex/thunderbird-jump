@@ -60,3 +60,11 @@ Either way `.github/workflows/release.yml` runs. It runs the whole CI suite
 `.xpi` and `updates.json`. Installed copies pick up the update through
 `update_url` in `manifest.json`.
 
+
+## Website
+
+`site/` is the GitHub Pages site (<https://oplex.github.io/thunderjump/>).
+The *Website* workflow publishes it with the images from `listing/` on every
+push that changes them. One-time setup: Settings → Pages → Source: *GitHub
+Actions*. The comparison page (`site/nostalgy-alternative.html`) holds dated
+figures from addons.thunderbird.net; refresh them when they go stale.
