@@ -96,7 +96,8 @@ tb.on("exit", (code) => finish({ crashed: true, code }));
 const timer = setTimeout(() => finish({ timeout: true }), timeoutMs);
 
 try {
-  chrome = await marionette(marionettePort);
+  // One retry with a fresh connection if Thunderbird was slow to start.
+  chrome = await marionette(marionettePort).catch(() => marionette(marionettePort));
   if (dovecot) {
     const n = await storeImapLogin(chrome, { host: "127.0.0.1", user: IMAP_USER, password: IMAP_PASSWORD });
     console.log(`Stored IMAP login via Marionette (${n} login)`);

@@ -21,9 +21,9 @@ export async function marionette(port, { timeoutMs = 60000, stepMs = 30000 } = {
     }
   });
   // Each reply must arrive within `stepMs`, so a stuck handshake fails loudly.
-  const next = (what) =>
+  const next = (what, ms = stepMs) =>
     new Promise((resolve, reject) => {
-      const t = setTimeout(() => reject(new Error(`no reply to ${what}`)), stepMs);
+      const t = setTimeout(() => reject(new Error(`no reply to ${what}`)), ms);
       waiting.push((msg) => {
         clearTimeout(t);
         resolve(msg);
@@ -32,8 +32,8 @@ export async function marionette(port, { timeoutMs = 60000, stepMs = 30000 } = {
 
   await next("hello");
   let id = 0;
-  async function send(name, params = {}) {
-    const reply = next(name);
+  async function send(name, params = {}, ms = stepMs) {
+    const reply = next(name, ms);
     const body = Buffer.from(JSON.stringify([0, ++id, name, params]));
     socket.write(`${body.length}:`);
     socket.write(body);
@@ -42,7 +42,9 @@ export async function marionette(port, { timeoutMs = 60000, stepMs = 30000 } = {
     return result;
   }
 
-  await send("WebDriver:NewSession", { capabilities: {} });
+  // NewSession answers only once Thunderbird has fully started, which takes
+  // much longer on a busy CI runner.
+  await send("WebDriver:NewSession", { capabilities: {} }, Math.max(stepMs, 120000));
   await send("Marionette:SetContext", { value: "chrome" });
   return {
     // Runs `script` (a function body) with chrome privileges; returns its value.
