@@ -65,7 +65,7 @@ async function render() {
     const ul = el("ul", { className: "releases" });
     for (const r of s.releases) {
       const li = el("li");
-      li.append(el("a", { href: r.url }, `ThunderJump ${r.tag.replace(/^v/, "")}`), ` · ${day(r.date)}`);
+      li.append(el("a", { href: r.url }, `${document.body.dataset.app ?? "Version"} ${r.tag.replace(/^v/, "")}`), ` · ${day(r.date)}`);
       ul.append(li);
     }
     $("releaseList").replaceChildren(ul);
