@@ -17,7 +17,7 @@ import { importModule } from "./pane-scripts.js";
 const IMAP_ACCOUNT = "Test IMAP";
 const root = resolve(import.meta.dirname, "../..");
 const bin = process.env.TB_BIN;
-const timeoutMs = Number(process.env.TB_TIMEOUT_MS ?? 240000);
+const timeoutMs = Number(process.env.TB_TIMEOUT_MS ?? 480000);
 if (!bin) {
   console.error("Set TB_BIN to the thunderbird executable");
   process.exit(2);

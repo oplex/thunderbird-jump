@@ -128,3 +128,15 @@ body.window #palette { max-height: none; }
 #status.error { color: var(--err); }
 #status.ok { color: var(--ok); }
 #hints { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+#selection {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--badge);
+  font-size: 12px;
+}
+.sel-head { font-weight: 600; margin-bottom: 4px; }
+.sel-msg { display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+.sel-subject { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sel-meta { flex: none; color: var(--dim); }
+.sel-more { color: var(--dim); }

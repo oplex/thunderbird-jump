@@ -7,6 +7,7 @@ export const DEFAULT_SETTINGS = {
   closeOnBlur: true,
   revealFolderPane: true,
   autoBackup: false,
+  confirmMove: false,
   recentLimit: 12,
 };
 

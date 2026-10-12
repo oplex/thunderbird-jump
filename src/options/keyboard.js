@@ -7,6 +7,9 @@ const LABELS = {
   "open-spotlight": "Open spotlight (centered palette)",
   _execute_action: "Open palette from the toolbar button",
   _execute_browser_action: "Open palette from the toolbar button",
+  "move-selected": "Move the selected messages",
+  "undo-move": "Undo the last move",
+  "open-manager": "Open ThunderJump Manager",
 };
 
 let isMac = false;

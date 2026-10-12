@@ -11,6 +11,7 @@
 
 import { parseInput, matchShortcuts, compareShortcutKeys, shortcutKey } from "./parse.js";
 import { rankFolders, fold } from "./fuzzy.js";
+import { buildMoveRows, undoRow } from "./move-rows.js";
 
 export const HELP = [
   ["text", "fuzzy search all folders, Enter to jump"],
@@ -25,6 +26,9 @@ export const HELP = [
   ["Shift+Enter", "open the folder in a new tab"],
   [":keys", "change keyboard shortcuts and settings"],
   [":backup", "export, import or auto-backup your settings"],
+  [":move", "move the selected messages (Alt+Shift+M)"],
+  [":undo", "undo the last move (Ctrl+Z)"],
+  [":manage", "open the ThunderJump Manager (search folders and mail)"],
 ];
 
 const label = (entry) => entry.segments.join(" › ");
@@ -94,10 +98,22 @@ export function buildRows(input, ctx) {
     return [{ type: "item", title: `Create “${segments.join(" / ")}”`, detail: `in ${label(parent)}`, icon: "➕", action: { op: "create", parentId: parent.id, segments } }];
   }
 
+  if (ctx.moving) return buildMoveRows(input, ctx);
+
   const p = parseInput(input);
+  const undo = undoRow(ctx.lastMove);
   switch (p.kind) {
     case "home":
-      return homeRows(ctx);
+      return undo ? [undo, ...homeRows(ctx)] : homeRows(ctx);
+
+    case "undo":
+      return [undo ?? { type: "info", text: "Nothing to undo" }];
+
+    case "move-mode":
+      return [{ type: "item", icon: "➜", title: "Move the selected messages…", detail: "pick a folder next (Alt+Shift+M does this directly)", action: { op: "enter-move" } }];
+
+    case "manager":
+      return [{ type: "item", icon: "🔍", title: "Open ThunderJump Manager", detail: "search folders and mail with filters, move in bulk", action: { op: "manager" } }];
 
     case "options":
       return [{ type: "item", icon: "⚙", title: "Open options", detail: "keyboard shortcuts, backup, behaviour, saved shortcuts", action: { op: "options" } }];

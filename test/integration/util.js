@@ -37,8 +37,8 @@ export function assert(cond, msg) {
 export const byPath = async (path) => (await loadFolders()).find((f) => f.segments.join("/") === path);
 
 // Open the palette as a spotlight window and return its live document.
-export async function openPalette(windowId) {
-  const url = browser.runtime.getURL(`src/palette/palette.html?mode=window&win=${windowId}`);
+export async function openPalette(windowId, action = "") {
+  const url = browser.runtime.getURL(`src/palette/palette.html?mode=window&win=${windowId}${action ? `&action=${action}` : ""}`);
   const win = await browser.windows.create({ type: "popup", url, width: 640, height: 460 });
   const view = await waitFor(
     () => browser.extension.getViews({ windowId: win.id }).find((v) => v.location.pathname.endsWith("palette.html")),

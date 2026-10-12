@@ -13,9 +13,11 @@ run inside real Thunderbird builds, from 91 to the newest release. When a new
 release changes something, CI shows it right away and the fix is usually a
 few lines.
 
-**Read-only by design.** It never moves, copies, deletes or changes messages,
-and never renames or deletes folders. It only changes which folder is shown.
-The one thing it writes is a **new folder**, and only when you ask for one.
+**Safe by default.** Out of the box ThunderJump is read-only: it never moves,
+copies, deletes or changes messages, and never renames or deletes folders. It
+only changes which folder is shown, and creates a **new folder** when you ask.
+Moving messages is an option you turn on yourself, and every move can be
+undone.
 
 ## Install
 
@@ -63,6 +65,25 @@ Differences on older versions:
   tab where Thunderbird doesn't let add-ons open new mail tabs (before 121).
 - Thunderbird **91–102**: when exporting settings, Thunderbird may ask where
   to save the file.
+
+## Moving messages (optional)
+
+Turn it on in the options (type `:keys` in the palette → *Moving messages*).
+Thunderbird asks once for permission to read and move messages.
+
+- **Spotlight style:** select messages and press **`Alt+Shift+M`**. The palette
+  shows what you're moving ("Moving 3 messages from Inbox" plus the subjects).
+  Type part of a folder name and press Enter. `j1`, `:j name` and `Alt+1…9`
+  work as targets too, and folders you often move to are listed first.
+- **Right-click style:** right-click the selected messages →
+  **Move with ThunderJump…**, or **Move to ▸** your shortcuts and recent
+  targets for a one-click move.
+- **Ask before each move** (option): Enter first shows "Move 3 messages from
+  Inbox to Archive?", and a second Enter moves them.
+- **Undo:** **`Ctrl+Z`** in the palette (or the *Undo* row at the top of it),
+  **`Alt+Shift+Z`** anywhere, right-click → *Undo last ThunderJump move*, or
+  the move history in the options. Moves are logged in the add-on's own
+  storage, and undo finds the messages again by their Message-ID.
 
 ## Backup and moving to another computer
 
@@ -114,6 +135,8 @@ the options.
 | `> Projects` | Create `Projects` at the top level of an account |
 | `:keys` | Change keyboard shortcuts and settings |
 | `:backup` | Export / import settings, automatic backup |
+| `:move` | Move the selected messages (when moving is on) |
+| `:undo` | Undo the last move |
 | `?` | Help |
 
 Folders that already exist along a path are reused, so `> A/B` never makes
@@ -138,8 +161,11 @@ The options page also lists and deletes shortcuts.
 - `accountsRead`: list accounts and folders, show the current folder
 - `accountsFolders`: create folders (only when you ask)
 - `storage`: keep your shortcuts and recent folders
+- `menus`: the right-click *Move with ThunderJump* items
 - `downloads` (optional, asked only if you turn on automatic backup): save
   the backup file to your Downloads folder
+- `messagesRead`, `messagesMove` (optional, asked only if you turn on moving):
+  see the selected messages, move them, and find them again for undo
 
 ## Development
 

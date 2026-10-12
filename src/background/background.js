@@ -3,6 +3,9 @@
 import { resolveMailWindowId, jumpToFolder } from "../tb/tabs.js";
 import { getShortcut, pushRecent, getSettings } from "../tb/store.js";
 import { writeBackupFile, hasDownloadsPermission } from "../tb/backup.js";
+import { undoMove, lastUndoableMove } from "../tb/messages.js";
+import { openManager } from "../tb/tabs.js";
+import { setupMenus, registerMenuHandlers } from "./menus.js";
 
 const WIDTH = 640;
 const HEIGHT = 460;
@@ -27,11 +30,12 @@ async function spotlightWindowId() {
   }
 }
 
-export async function openSpotlight() {
+// `action`: "move" opens the palette in move mode for the selected messages.
+export async function openSpotlight(action = "") {
   const existing = await spotlightWindowId();
   if (existing != null) {
-    await browser.windows.update(existing, { focused: true });
-    return;
+    if (!action) return browser.windows.update(existing, { focused: true });
+    await browser.windows.remove(existing).catch(() => {});
   }
   const parentId = await resolveMailWindowId();
   const parent = parentId == null ? null : await browser.windows.get(parentId);
@@ -42,7 +46,7 @@ export async function openSpotlight() {
   }
   const win = await browser.windows.create({
     type: "popup",
-    url: browser.runtime.getURL(`src/palette/palette.html?mode=window&win=${parentId ?? ""}`),
+    url: browser.runtime.getURL(`src/palette/palette.html?mode=window&win=${parentId ?? ""}${action ? `&action=${action}` : ""}`),
     allowScriptsToClose: true,
     ...geometry,
   });
@@ -60,8 +64,16 @@ async function jumpToShortcut(name) {
   await jumpToFolder(s.folderId, windowId, { revealPane: revealFolderPane });
 }
 
+async function undoLastMove() {
+  const last = await lastUndoableMove();
+  if (last) await undoMove(last.id);
+}
+
 export function handleCommand(command) {
   if (command === "open-spotlight") return openSpotlight();
+  if (command === "move-selected") return openSpotlight("move");
+  if (command === "undo-move") return undoLastMove();
+  if (command === "open-manager") return openManager();
   const m = /^jump-(\d+)$/.exec(command);
   if (m) return jumpToShortcut(m[1]);
 }
@@ -128,3 +140,6 @@ browser.runtime.onMessage.addListener((msg) => {
   if (msg?.type === "config-changed") return scheduleBackup();
   if (msg?.type === "backup-now") return runAutoBackup();
 });
+
+registerMenuHandlers({ openSpotlight });
+setupMenus();

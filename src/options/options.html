@@ -34,6 +34,19 @@
     <button id="openSpotlight">Open spotlight</button>
   </p>
 
+  <h2>Moving messages</h2>
+  <p class="dim">Off by default: ThunderJump then never touches your mail. When on, select
+    messages and press <kbd>Alt+Shift+M</kbd> (or right-click → Move with ThunderJump…).
+    Every move can be undone (<kbd>Alt+Shift+Z</kbd>, <kbd>Ctrl+Z</kbd> in the palette, or below).</p>
+  <label><input type="checkbox" id="enableMoving"> Allow ThunderJump to move messages
+    (Thunderbird asks for permission to read and move messages)</label>
+  <label><input type="checkbox" id="confirmMove"> Ask before each move</label>
+  <p id="moveStatus"></p>
+  <table class="history">
+    <thead><tr><th>When</th><th>Messages</th><th>From → to</th><th></th></tr></thead>
+    <tbody id="moveHistory"></tbody>
+  </table>
+
   <h2>Backup</h2>
   <p class="dim">Thunderbird deletes an add-on's settings when you remove it and doesn't
     warn the add-on first, so keep a backup file if you want to get them back.</p>

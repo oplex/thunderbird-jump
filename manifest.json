@@ -20,10 +20,13 @@
   "permissions": [
     "accountsRead",
     "accountsFolders",
-    "storage"
+    "storage",
+    "menus"
   ],
   "optional_permissions": [
-    "downloads"
+    "downloads",
+    "messagesRead",
+    "messagesMove"
   ],
   "background": {
     "scripts": [
@@ -51,6 +54,21 @@
         "default": "Alt+Shift+J"
       },
       "description": "Open the jump palette from the toolbar button"
+    },
+    "move-selected": {
+      "suggested_key": {
+        "default": "Alt+Shift+M"
+      },
+      "description": "Move the selected messages (palette in move mode)"
+    },
+    "undo-move": {
+      "suggested_key": {
+        "default": "Alt+Shift+Z"
+      },
+      "description": "Undo the last move"
+    },
+    "open-manager": {
+      "description": "Open ThunderJump Manager"
     },
     "jump-1": {
       "description": "Jump to shortcut j1"

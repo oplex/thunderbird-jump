@@ -7,6 +7,7 @@ import { getShortcuts, getRecent, getSettings, getShortcut, pushRecent } from ".
 import { jumpToFolder } from "../tb/tabs.js";
 import { renderRows, isSelectable } from "./render.js";
 import { runAction } from "./actions.js";
+import { loadMoveState, startMove, renderSelection } from "./move-mode.js";
 
 const params = new URLSearchParams(location.search);
 const mode = params.get("mode") === "window" ? "window" : "popup";
@@ -15,6 +16,8 @@ const input = document.getElementById("input");
 const list = document.getElementById("list");
 const status = document.getElementById("status");
 const modeBadge = document.getElementById("mode");
+const selection = document.getElementById("selection");
+const PLACEHOLDER = "Jump to folder…  (j1, :j name, :jj name, query > new, ? help)";
 
 const state = {
   folders: [],
@@ -28,6 +31,12 @@ const state = {
   rows: [],
   selected: -1,
   busy: false,
+  // Moving messages (see move-mode.js / lib/move-rows.js).
+  moving: null,
+  needsPermission: false,
+  confirmTarget: null,
+  moveTargets: [],
+  lastMove: null,
 };
 
 function setStatus(text = "", kind = "") {
@@ -43,7 +52,7 @@ function close() {
 }
 
 async function reload() {
-  const [folders, shortcuts, recent] = await Promise.all([loadFolders(), getShortcuts(), getRecent()]);
+  const [folders, shortcuts, recent] = await Promise.all([loadFolders(), getShortcuts(), getRecent(), loadMoveState(state)]);
   state.folders = folders;
   state.byId = new Map(folders.map((f) => [f.id, f]));
   state.shortcuts = shortcuts;
@@ -62,8 +71,22 @@ function draw() {
     execute({ newTab: ev.shiftKey });
   });
   const parent = state.byId.get(state.createParentId);
-  modeBadge.hidden = !parent;
-  modeBadge.textContent = parent ? `New in ${parent.name} ›` : "";
+  const badge = parent ? `New in ${parent.name} ›` : state.moving ? "Move to ›" : "";
+  modeBadge.hidden = !badge;
+  modeBadge.textContent = badge;
+  renderSelection(selection, state);
+}
+
+async function enterMove() {
+  await startMove(state);
+  input.value = "";
+  input.placeholder = "Move to folder…  (type a name, j1, :j name)";
+  refresh();
+}
+
+function leaveConfirm() {
+  state.confirmTarget = null;
+  refresh();
 }
 
 function move(delta) {
@@ -95,7 +118,7 @@ function enterCreateMode() {
 function leaveCreateMode() {
   state.createParentId = null;
   input.value = "";
-  input.placeholder = "Jump to folder…  (j1, :j name, :jj name, query > new, ? help)";
+  input.placeholder = PLACEHOLDER;
   setStatus();
   refresh();
 }
@@ -118,6 +141,11 @@ function execute({ newTab = false } = {}) {
   guarded(async () => {
     const result = await runAction(row.action, state, { newTab });
     if (result.close) return close();
+    if (result.confirm != null) {
+      state.confirmTarget = result.confirm;
+      return refresh();
+    }
+    if (result.enterMove) return enterMove();
     if (result.reload) await reload();
     state.createParentId = null;
     input.value = "";
@@ -126,13 +154,21 @@ function execute({ newTab = false } = {}) {
   });
 }
 
-// Alt+1‥9: jump straight to a numbered shortcut.
+// Alt+1‥9: jump straight to a numbered shortcut (or move there in move mode).
 function quickJump(digit) {
   guarded(async () => {
     const s = await getShortcut(digit);
     if (!s || !state.byId.has(s.folderId)) {
       setStatus(`No shortcut j${digit} · set it with :jj${digit}`, "error");
       return;
+    }
+    if (state.moving?.length) {
+      const result = await runAction({ op: "move", folderId: s.folderId }, state);
+      if (result.confirm != null) {
+        state.confirmTarget = result.confirm;
+        return refresh();
+      }
+      return close();
     }
     await pushRecent(s.folderId);
     await jumpToFolder(s.folderId, state.windowId, { revealPane: state.settings.revealFolderPane });
@@ -157,12 +193,23 @@ function onKey(ev) {
   } else if (ev.ctrlKey && (key === "n" || key === "N")) {
     ev.preventDefault();
     enterCreateMode();
+  } else if (ev.ctrlKey && (key === "z" || key === "Z")) {
+    ev.preventDefault();
+    if (state.lastMove && !state.lastMove.undone) {
+      guarded(async () => {
+        const result = await runAction({ op: "undo", entryId: state.lastMove.id }, state);
+        await reload();
+        refresh();
+        setStatus(result.message, "ok");
+      });
+    } else setStatus("Nothing to undo");
   } else if (ev.altKey && /^[1-9]$/.test(key)) {
     ev.preventDefault();
     quickJump(key);
   } else if (key === "Escape") {
     ev.preventDefault();
     if (state.createParentId != null) leaveCreateMode();
+    else if (state.confirmTarget != null) leaveConfirm();
     else close();
   } else if (key === "Backspace" && !input.value && state.createParentId != null) {
     ev.preventDefault();
@@ -183,6 +230,7 @@ async function init() {
     refresh();
   });
   input.addEventListener("keydown", onKey);
+  if (params.get("action") === "move") await enterMove();
   if (mode === "window" && settings.closeOnBlur) {
     window.addEventListener("blur", () => {
       if (!state.busy) close();

@@ -3,6 +3,7 @@ import { loadFolders, pathLabel } from "../tb/folders.js";
 import { compareShortcutKeys } from "../lib/parse.js";
 import { renderKeyboard } from "./keyboard.js";
 import { initBackup } from "./backup-ui.js";
+import { initMoves } from "./moves-ui.js";
 
 const tbody = document.getElementById("shortcuts");
 
@@ -62,6 +63,7 @@ async function initSettings() {
 renderShortcuts();
 initSettings();
 renderKeyboard();
+initMoves();
 // After an import, show the restored shortcuts, settings and keys.
 initBackup(() => {
   renderShortcuts();

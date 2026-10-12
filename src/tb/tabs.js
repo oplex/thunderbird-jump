@@ -24,7 +24,7 @@ export async function resolveMailWindowId(hint) {
   return w?.id ?? null;
 }
 
-async function findMailTab(windowId) {
+export async function findMailTab(windowId) {
   const opts = windowId == null ? {} : { windowId };
   const [active] = await browser.mailTabs.query({ ...opts, active: true });
   if (active) return active;
@@ -118,4 +118,16 @@ export async function jumpToFolder(folderId, windowId, { newTab = false, revealP
   if (windowId != null) {
     await browser.windows.update(windowId, { focused: true }).catch(() => {});
   }
+}
+
+// Open the ThunderJump Manager in a tab (or switch to it if already open).
+export async function openManager() {
+  const url = browser.runtime.getURL("src/manager/manager.html");
+  const [open] = await browser.tabs.query({ url }).catch(() => []);
+  if (open) {
+    await browser.tabs.update(open.id, { active: true });
+    await browser.windows.update(open.windowId, { focused: true }).catch(() => {});
+    return;
+  }
+  await browser.tabs.create({ url });
 }

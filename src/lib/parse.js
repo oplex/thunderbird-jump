@@ -11,6 +11,8 @@
 //   :new A/B           create folder path A/B inside the current folder
 //   query > A/B        search a parent folder, create A/B inside it
 //   :keys, :backup     open the options page (keys, backup, settings)
+//   :move, :m          move the selected messages (when moving is turned on)
+//   :undo, :u          undo the last move
 //   ? or :help         help
 
 export function shortcutKey(name) {
@@ -31,6 +33,9 @@ export function parseInput(raw) {
   if (!t) return { kind: "home" };
   if (t === "?" || /^:h(elp)?$/i.test(t)) return { kind: "help" };
   if (/^:(keys|options|settings|backup|export|import)$/i.test(t)) return { kind: "options" };
+  if (/^:(move|m)$/i.test(t)) return { kind: "move-mode" };
+  if (/^:(undo|u)$/i.test(t)) return { kind: "undo" };
+  if (/^:(manage|manager|search|find)$/i.test(t)) return { kind: "manager" };
 
   let m = /^j(\d+)$/i.exec(t);
   if (m) return { kind: "jump-shortcut", name: m[1] };

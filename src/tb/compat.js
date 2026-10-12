@@ -94,6 +94,23 @@ export async function getMailTab(tabId) {
   return (await browser.mailTabs.query({})).find((t) => tabIdOf(t) === tabId) ?? null;
 }
 
+// Destination for messages.move/copy: MV3 takes a folder id (folderId),
+// MV2 a MailFolder (91–120) or, from 121, also an id.
+export function messageFolderArg(id) {
+  return hasFolderIds() ? id : legacyRef(id);
+}
+
+// messages.query filter for one folder: `folderId` from Thunderbird 121
+// (both manifest versions), a MailFolder object as `folder` before that.
+export function queryFolder(id) {
+  return hasFolderIds() ? { folderId: id } : { folder: legacyRef(id) };
+}
+
+// messages.query "unread only": MV3 `read: false`, MV2 `unread: true`.
+export function queryUnread() {
+  return isMV3() ? { read: false } : { unread: true };
+}
+
 // Thunderbird 115 has no mailTabs.create.
 export const canCreateMailTab = () => typeof browser.mailTabs.create === "function";
 

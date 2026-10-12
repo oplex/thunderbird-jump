@@ -69,7 +69,7 @@ export function buildTestXpi(root, stage, xpi, port, imapAccount = null, downloa
   cpSync(join(root, "src"), join(stage, "src"), { recursive: true });
   cpSync(join(root, "icons"), join(stage, "icons"), { recursive: true });
   mkdirSync(join(stage, "test/integration"), { recursive: true });
-  for (const f of ["selftest.js", "util.js", "tests-local.js", "tests-ui.js", "tests-imap.js", "tests-features.js", "tests-backup.js", "pane-scripts.js"]) {
+  for (const f of ["selftest.js", "util.js", "tests-local.js", "tests-ui.js", "tests-imap.js", "tests-features.js", "tests-backup.js", "pane-scripts.js", "tests-moves.js"]) {
     cpSync(join(root, "test/integration", f), join(stage, "test/integration", f));
   }
   writeFileSync(
@@ -81,6 +81,13 @@ export function buildTestXpi(root, stage, xpi, port, imapAccount = null, downloa
 
   let manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
   manifest.host_permissions = ["http://127.0.0.1/*"];
+  // Granting message permissions at runtime needs a click on Thunderbird's
+  // prompt; the test build declares them instead (same APIs afterwards).
+  manifest.permissions.push("messagesRead", "messagesMove");
+  // Lets the tests add real messages to folders (Thunderbird 106+; older
+  // versions ignore the unknown permission and the test uses another way).
+  manifest.permissions.push("messagesImport");
+  manifest.optional_permissions = manifest.optional_permissions.filter((p) => !manifest.permissions.includes(p));
   if (legacy) {
     manifest = toMV2(manifest);
     // The MV2 background page loads the add-on and then the self-test.

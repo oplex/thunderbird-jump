@@ -1,12 +1,16 @@
-// Executes row actions. The only write operations are: storing shortcuts /
-// recent folders in the add-on's own storage, and creating folders when the
-// user explicitly asks. Messages are never touched.
+// Executes row actions. Write operations: storing shortcuts / recent folders
+// in the add-on's own storage, creating folders when asked, and moving
+// messages (only after the user turned moving on, and always undoable).
 
 import { createFolderPath, pathLabel } from "../tb/folders.js";
 import { jumpToFolder } from "../tb/tabs.js";
 import { setShortcut, deleteShortcut, pushRecent } from "../tb/store.js";
+import { moveMessages, undoMove, enableMoving } from "../tb/messages.js";
+import { openManager } from "../tb/tabs.js";
 
-// Returns { close: bool, message?: string, reload?: bool, folderId?: string }.
+const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+// Returns { close, message?, reload?, folderId?, confirm?, enterMove? }.
 export async function runAction(action, state, { newTab = false } = {}) {
   switch (action.op) {
     case "jump": {
@@ -42,6 +46,32 @@ export async function runAction(action, state, { newTab = false } = {}) {
       }
       return { close: false, reload: true, folderId, message: `Created ${where}` };
     }
+
+    case "move": {
+      if (state.settings.confirmMove && !action.confirmed) return { close: false, confirm: action.folderId };
+      const labels = Object.fromEntries(state.folders.map((f) => [f.id, pathLabel(f)]));
+      await moveMessages(state.moving, action.folderId, { labels });
+      return { close: true };
+    }
+
+    case "undo": {
+      const { restored, missing } = await undoMove(action.entryId);
+      const note = missing ? ` · ${missing} could not be found (moved or deleted since)` : "";
+      return { close: false, reload: true, message: `Moved ${plural(restored, "message")} back${note}` };
+    }
+
+    case "enable-move": {
+      const granted = await enableMoving().catch(() => false);
+      if (!granted) throw new Error("Moving stays off (permission not given)");
+      return { close: false, enterMove: true };
+    }
+
+    case "enter-move":
+      return { close: false, enterMove: true };
+
+    case "manager":
+      await openManager();
+      return { close: true };
 
     case "options":
       await browser.runtime.openOptionsPage();
