@@ -1,0 +1,35 @@
+name: Upload to addons.thunderbird.net
+
+# Uploads the two "-atn" files of a GitHub release to addons.thunderbird.net
+# as new listed versions (they then wait for ATN's review). Runs after every
+# release, or by hand: Actions → this workflow → Run workflow → version.
+# Needs the repository secrets JWTISSUER and JWTSECRET (ATN → API keys).
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to upload, e.g. 1.8.0 (its GitHub release must exist)"
+        required: true
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Download the ATN files from the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "v${{ inputs.version }}" --pattern "*-atn*.xpi" --dir atn
+      - name: Upload to addons.thunderbird.net
+        env:
+          ATN_API_KEY: ${{ secrets.JWTISSUER }}
+          ATN_API_SECRET: ${{ secrets.JWTSECRET }}
+        run: node scripts/atn-upload.mjs atn/*.xpi

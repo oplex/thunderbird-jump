@@ -34,10 +34,17 @@ covers every supported version.
 
 ## Every new release
 
-1. Release as usual (Actions → *Release* → *Run workflow*, after bumping the
-   version in `manifest.json`).
-2. Download the two `-atn` files from the new GitHub release.
-3. On ATN: **Manage → Upload New Version**, once for each file.
+Automatic: after the GitHub release is published, the *Upload to
+addons.thunderbird.net* workflow uploads both `-atn` files to ATN as new
+versions, and they wait for ATN's review as usual. It needs the repository
+secrets `JWTISSUER` and `JWTSECRET` (ATN → Developer Hub →
+[API keys](https://addons.thunderbird.net/en-US/developers/addon/api/key/)).
+
+To upload a release again by hand: Actions → *Upload to
+addons.thunderbird.net* → *Run workflow* → the version (e.g. `1.8.0`).
+Versions already on ATN are skipped. Without the secrets, download the two
+`-atn` files from the GitHub release and use **Manage → Upload New Version**
+on ATN, once for each file.
 
 ## Listing text
 

@@ -18,18 +18,22 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      version: ${{ steps.tag.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Work out the release tag
+        id: tag
         run: |
           v=$(node -p "require('./manifest.json').version")
           if [ "$GITHUB_REF_TYPE" = tag ] && [ "v$v" != "$GITHUB_REF_NAME" ]; then
             echo "tag $GITHUB_REF_NAME != manifest version $v"; exit 1
           fi
           echo "TAG=v$v" >> "$GITHUB_ENV"
+          echo "version=$v" >> "$GITHUB_OUTPUT"
       - run: npm run build
       - run: node scripts/make-updates-json.mjs "$GITHUB_REPOSITORY"
       - name: Publish GitHub release
@@ -47,3 +51,10 @@ jobs:
           - Thunderbird 91 – 139: thunderjump-${TAG#v}-tb91-139.xpi
 
           Files with -atn in the name are for uploading to addons.thunderbird.net (see PUBLISHING.md); you don't need them."
+
+  atn:
+    needs: publish
+    uses: ./.github/workflows/atn.yml
+    with:
+      version: ${{ needs.publish.outputs.version }}
+    secrets: inherit
