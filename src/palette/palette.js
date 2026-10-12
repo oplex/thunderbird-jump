@@ -37,6 +37,9 @@ function setStatus(text = "", kind = "") {
 
 function close() {
   window.close();
+  // Thunderbird 115 ignores window.close() in a window the add-on opened
+  // without allowScriptsToClose; close the spotlight window directly too.
+  if (mode === "window") browser.windows.getCurrent().then((w) => browser.windows.remove(w.id)).catch(() => {});
 }
 
 async function reload() {

@@ -6,7 +6,7 @@
 // makes a missing Dovecot an error, as in CI).
 
 import { createServer } from "node:http";
-import { spawn } from "node:child_process";
+import { spawn, execFileSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { buildTestXpi, makeProfile } from "./profile.mjs";
@@ -71,14 +71,20 @@ if (dovecot) console.log(`Dovecot IMAP on 127.0.0.1:${dovecot.port}`);
 const xpi = join(work, "addon.xpi");
 const downloadDir = join(work, "downloads");
 mkdirSync(downloadDir);
-const addonId = buildTestXpi(root, join(work, "stage"), xpi, port, dovecot ? IMAP_ACCOUNT : null, downloadDir);
+// Thunderbird 115–139 get the Manifest V2 build (see scripts/manifest-mv2.mjs).
+const tbVersion = execFileSync(bin, ["--version"], { encoding: "utf8" }).match(/(\d+)\./)?.[1];
+const legacy = Number(tbVersion) < 140;
+console.log(`Thunderbird ${tbVersion}: ${legacy ? "Manifest V2 (115) build" : "Manifest V3 build"}`);
+const addonId = buildTestXpi(root, join(work, "stage"), xpi, port, dovecot ? IMAP_ACCOUNT : null, downloadDir, legacy);
 const profile = join(work, "profile");
 const marionettePort = await freePort();
 const imap = dovecot ? { port: dovecot.port, user: IMAP_USER, accountName: IMAP_ACCOUNT } : null;
 makeProfile(profile, xpi, addonId, { imap, marionettePort, downloadDir });
 
 console.log(`Starting ${bin} (headless), report port ${port}`);
-const tb = spawn(bin, ["--headless", "--no-remote", "--marionette", "-remote-allow-system-access", "--profile", profile], {
+// Newer Thunderbird needs -remote-allow-system-access for Marionette's chrome scope.
+const extraArgs = legacy ? [] : ["-remote-allow-system-access"];
+const tb = spawn(bin, ["--headless", "--no-remote", "--marionette", ...extraArgs, "--profile", profile], {
   stdio: ["ignore", "pipe", "pipe"],
   env: { ...process.env, MOZ_HEADLESS: "1" },
 });

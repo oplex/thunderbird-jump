@@ -44,6 +44,7 @@ export function makeFakeBrowser() {
   };
 
   const browser = {
+    runtime: { getManifest: () => ({ manifest_version: 3, version: "0.0.0" }) },
     accounts: {
       get: async (id) => {
         const a = accounts.find((x) => x.id === id);

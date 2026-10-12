@@ -14,19 +14,29 @@ something, CI shows it right away and the fix is usually a few lines.
 and never renames or deletes folders. It only changes which folder is shown.
 The one thing it writes is a **new folder**, and only when you ask for one.
 
-Needs Thunderbird **140 ESR** or newer (Manifest V3). Tested against
-140.7.1esr and the latest 140.x ESR.
+Works with **Thunderbird 140+** and, through a separate build, **Thunderbird
+115–139**. Every change is tested in real Thunderbird 115.5.1, 140.7.1esr and
+the latest 140 ESR.
 
 ## Install
 
-1. Download `thunderbird-jump-<version>.xpi` from the
-   [latest release](https://github.com/oplex/thunderbird-jump/releases/latest).
+1. Download the file for your Thunderbird from the
+   [latest release](https://github.com/oplex/thunderbird-jump/releases/latest)
+   (see Help → About Thunderbird for your version):
+   - Thunderbird **140 or newer**: `thunderbird-jump-<version>.xpi`
+   - Thunderbird **115 – 139**: `thunderbird-jump-<version>-tb115.xpi`
 2. In Thunderbird open **Add-ons and Themes** (Tools menu, or `Ctrl+Shift+A`).
 3. Click ⚙ → **Install Add-on From File…** and choose the `.xpi`.
    (Or drag the `.xpi` onto the Add-ons page.)
 
 That's it. Thunderbird checks this repo's releases for new versions and
-updates the add-on by itself, like any add-on from the official store.
+updates the add-on by itself, like any add-on from the official store. When
+you upgrade Thunderbird from 115 to 140, the next update check switches you to
+the 140 build automatically.
+
+On Thunderbird 115, **Shift+Enter** opens the folder in the current tab,
+because 115 doesn't let add-ons open new mail tabs. Everything else works the
+same.
 
 ## Backup and moving to another computer
 
@@ -112,7 +122,7 @@ npm test              # unit tests (Node 22, fake Thunderbird APIs)
 npm run test:tb       # end-to-end inside real headless Thunderbird 140.7.1esr
 npm run lint          # web-ext lint (Firefox-only API warnings are expected)
 npm run check-lines   # every file must stay under 300 lines
-npm run build         # dist/thunderbird-jump-<version>.xpi
+npm run build         # dist/thunderbird-jump-<version>.xpi and -tb115.xpi
 ```
 
 `npm run test:tb` downloads Thunderbird into `.thunderbird/` (see
@@ -125,7 +135,12 @@ throwaway IMAP server and checks jumping and folder creation on a real IMAP
 account, including that the new mailboxes exist on the server. CI always
 runs the IMAP part. To use
 a different build, pass `TB_BIN=/path/to/thunderbird`, or run
-`sh scripts/fetch-thunderbird.sh latest-esr`.
+`sh scripts/fetch-thunderbird.sh latest-esr` (or `115.5.1`). On Thunderbird
+115–139 the runner automatically tests the Manifest V2 build.
+
+`src/tb/compat.js` holds the differences between Thunderbird 115 and 121+ (no
+folder ids in 115, different tab and folder fields), and
+`scripts/manifest-mv2.mjs` derives the 115 build's manifest from `manifest.json`.
 
 ### Layout
 

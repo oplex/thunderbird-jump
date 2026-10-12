@@ -6,6 +6,7 @@ import { eventToShortcut, displayShortcut } from "../lib/keys.js";
 const LABELS = {
   "open-spotlight": "Open spotlight (centered palette)",
   _execute_action: "Open palette from the toolbar button",
+  _execute_browser_action: "Open palette from the toolbar button",
 };
 
 let isMac = false;

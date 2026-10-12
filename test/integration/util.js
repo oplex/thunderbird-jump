@@ -83,7 +83,12 @@ export async function isOpen(p) {
 }
 
 export async function closed(p) {
-  await waitFor(async () => !(await isOpen(p)), "palette to close");
+  try {
+    await waitFor(async () => !(await isOpen(p)), "palette to close");
+  } catch (e) {
+    const status = p.doc.getElementById("status")?.textContent;
+    throw new Error(`${e.message}${status ? ` (palette says: ${status})` : ""}`);
+  }
 }
 
 export async function statusText(p, includes) {

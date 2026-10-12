@@ -13,7 +13,8 @@ export async function uiTests(windowId, root) {
   await check("keyboard commands are registered with their default keys", async () => {
     const cmds = Object.fromEntries((await browser.commands.getAll()).map((c) => [c.name, c.shortcut]));
     assert(cmds["open-spotlight"] === "Ctrl+Shift+Space", `open-spotlight = ${cmds["open-spotlight"]}`);
-    assert(cmds._execute_action === "Alt+Shift+J", `_execute_action = ${cmds._execute_action}`);
+    const toolbar = cmds._execute_action ?? cmds._execute_browser_action; // MV3 / MV2 name
+    assert(toolbar === "Alt+Shift+J", `toolbar command = ${toolbar}`);
     for (const n of [1, 2, 3, 4, 5]) assert(`jump-${n}` in cmds, `jump-${n} missing`);
   });
 

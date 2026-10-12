@@ -4,6 +4,7 @@
 import { mkdirSync, writeFileSync, cpSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
+import { toMV2 } from "../../scripts/manifest-mv2.mjs";
 
 const PREFS = {
   // Local Folders as the only account, so the 3-pane window opens directly.
@@ -62,7 +63,8 @@ function prefLine(name, value) {
 }
 
 // Copy the add-on into `stage`, add the self-test, and zip it to `xpi`.
-export function buildTestXpi(root, stage, xpi, port, imapAccount = null, downloadDir = "") {
+// `legacy`: build the Manifest V2 variant for Thunderbird 115–139.
+export function buildTestXpi(root, stage, xpi, port, imapAccount = null, downloadDir = "", legacy = false) {
   mkdirSync(stage, { recursive: true });
   cpSync(join(root, "src"), join(stage, "src"), { recursive: true });
   cpSync(join(root, "icons"), join(stage, "icons"), { recursive: true });
@@ -77,9 +79,19 @@ export function buildTestXpi(root, stage, xpi, port, imapAccount = null, downloa
       `export const DOWNLOAD_DIR = ${JSON.stringify(downloadDir)};\n`,
   );
 
-  const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
-  manifest.background.scripts.push("test/integration/selftest.js");
+  let manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
   manifest.host_permissions = ["http://127.0.0.1/*"];
+  if (legacy) {
+    manifest = toMV2(manifest);
+    // The MV2 background page loads the add-on and then the self-test.
+    writeFileSync(
+      join(stage, "src/background/background.html"),
+      '<!doctype html><meta charset="utf-8"><script type="module" src="background.js"></script>' +
+        '<script type="module" src="../../test/integration/selftest.js"></script>\n',
+    );
+  } else {
+    manifest.background.scripts.push("test/integration/selftest.js");
+  }
   writeFileSync(join(stage, "manifest.json"), JSON.stringify(manifest, null, 2));
 
   execFileSync("zip", ["-qr", xpi, "."], { cwd: stage });

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Thunderbird Jump",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Spotlight-style folder jumper for Thunderbird: fuzzy search, j1/:j shortcuts, quick folder creation. Never moves or deletes mail.",
   "author": "oplex",
   "browser_specific_settings": {

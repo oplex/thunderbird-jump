@@ -47,7 +47,7 @@ export async function featureTests(windowId, root) {
     const target = await waitFor(() => at("Zeta/Deep/Nested/Target"), "Target folder");
     await jumpToFolder((await at("Trash")).id, windowId);
     const [tab] = await browser.mailTabs.query({ windowId, active: true });
-    await browser.mailTabs.update(tab.tabId, { folderPaneVisible: false });
+    await browser.mailTabs.update(tab.tabId ?? tab.id, { folderPaneVisible: false });
     assert(await chrome(COLLAPSE, ["/Zeta"]), "could not collapse Zeta");
 
     const p = await openPalette(windowId);

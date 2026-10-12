@@ -7,8 +7,17 @@ import { writeBackupFile, hasDownloadsPermission } from "../tb/backup.js";
 const WIDTH = 640;
 const HEIGHT = 460;
 
+// storage.session survives the MV3 event page being suspended; the MV2 build
+// for Thunderbird 115 has a persistent page, so memory is enough there.
+const memory = {};
+const session = browser.storage.session ?? {
+  get: async (k) => ({ [k]: memory[k] }),
+  set: async (o) => Object.assign(memory, o),
+  remove: async (k) => delete memory[k],
+};
+
 async function spotlightWindowId() {
-  const { spotlightWindowId: id } = await browser.storage.session.get("spotlightWindowId");
+  const { spotlightWindowId: id } = await session.get("spotlightWindowId");
   if (id == null) return null;
   try {
     await browser.windows.get(id);
@@ -37,7 +46,7 @@ export async function openSpotlight() {
     allowScriptsToClose: true,
     ...geometry,
   });
-  await browser.storage.session.set({ spotlightWindowId: win.id });
+  await session.set({ spotlightWindowId: win.id });
 }
 
 async function jumpToShortcut(name) {
@@ -58,8 +67,8 @@ export function handleCommand(command) {
 browser.commands.onCommand.addListener((command) => handleCommand(command));
 
 browser.windows.onRemoved.addListener(async (id) => {
-  const { spotlightWindowId: current } = await browser.storage.session.get("spotlightWindowId");
-  if (current === id) await browser.storage.session.remove("spotlightWindowId");
+  const { spotlightWindowId: current } = await session.get("spotlightWindowId");
+  if (current === id) await session.remove("spotlightWindowId");
 });
 
 // Automatic backup file (opt-in): rewritten a moment after shortcuts,

@@ -1,6 +1,8 @@
 // Navigation helpers: find the mail window/tab and change the displayed folder.
 // Changing the displayed folder is purely a view change; no data is modified.
 
+import { hasFolderIds, legacyRef, legacyRootId, isLegacyRoot, folderIdOf, tabIdOf, displayProps, canCreateMailTab } from "./compat.js";
+
 // The 3-pane window the palette should act on.
 // `hint` is a window id passed in by the opener (spotlight mode), if any.
 export async function resolveMailWindowId(hint) {
@@ -33,7 +35,7 @@ async function findMailTab(windowId) {
 // Id of the folder shown in the window's mail tab, or null.
 export async function currentFolderId(windowId) {
   const tab = await findMailTab(windowId);
-  return tab?.displayedFolder?.id ?? null;
+  return tab?.displayedFolder ? folderIdOf(tab.displayedFolder) : null;
 }
 
 // Thunderbird selects the folder in the folder pane, expanding collapsed
@@ -41,7 +43,7 @@ export async function currentFolderId(windowId) {
 // was hidden. If the folder is not listed in any enabled folder-pane view
 // (e.g. only "Favorite folders"), the "All folders" view is turned on.
 async function showFolder(tabId, folderId, revealPane) {
-  const props = { displayedFolderId: folderId };
+  const props = displayProps(folderId);
   // Show the pane *before* selecting: Thunderbird scrolls the selected row
   // into view at selection time, which does nothing while the pane is hidden.
   if (revealPane) {
@@ -69,28 +71,37 @@ async function showFolder(tabId, folderId, revealPane) {
 // top-level folders and when the system asks for reduced motion (no animation).
 const EXPAND_ANIMATION_MS = 250;
 
+async function rootAndDepth(folderId) {
+  if (!hasFolderIds()) {
+    const { accountId, path } = legacyRef(folderId);
+    return { rootId: legacyRootId(accountId), depth: isLegacyRoot(folderId) ? 0 : path.split("/").filter(Boolean).length };
+  }
+  const folder = await browser.folders.get(folderId);
+  const account = await browser.accounts.get(folder.accountId, false);
+  const depth = folder.isRoot ? 0 : (folder.path ?? "").split("/").filter(Boolean).length;
+  return { rootId: account?.rootFolder?.id, depth };
+}
+
 async function rescrollAfterExpand(tabId, folderId) {
   if (globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
-  const folder = await browser.folders.get(folderId);
-  if (folder.isRoot || (folder.path ?? "").split("/").filter(Boolean).length < 2) return;
-  const account = await browser.accounts.get(folder.accountId);
-  const rootId = account?.rootFolder?.id;
-  if (!rootId) return;
+  const { rootId, depth } = await rootAndDepth(folderId);
+  if (!rootId || depth < 2) return;
   await new Promise((r) => setTimeout(r, EXPAND_ANIMATION_MS));
-  await browser.mailTabs.update(tabId, { displayedFolderId: rootId });
-  await browser.mailTabs.update(tabId, { displayedFolderId: folderId });
+  await browser.mailTabs.update(tabId, displayProps(rootId));
+  await browser.mailTabs.update(tabId, displayProps(folderId));
 }
 
 // Show `folderId` in the window's mail tab (or in a new tab when asked).
-// MV3 MailTab exposes `tabId` and takes `displayedFolderId` (Thunderbird 128+).
+// (Tab and folder field names differ by version; see compat.js.)
 export async function jumpToFolder(folderId, windowId, { newTab = false, revealPane = true } = {}) {
-  let tab = newTab ? null : await findMailTab(windowId);
+  // Thunderbird 115 can't open a mail tab for an add-on; use the current one.
+  let tab = newTab && canCreateMailTab() ? null : await findMailTab(windowId);
   if (!tab) {
-    tab = await browser.mailTabs.create({ displayedFolderId: folderId });
-    if (revealPane && tab?.tabId) await showFolder(tab.tabId, folderId, true);
+    tab = await browser.mailTabs.create(displayProps(folderId));
+    if (revealPane && tab) await showFolder(tabIdOf(tab), folderId, true);
   } else {
-    if (!tab.active) await browser.tabs.update(tab.tabId, { active: true });
-    await showFolder(tab.tabId, folderId, revealPane);
+    if (!tab.active) await browser.tabs.update(tabIdOf(tab), { active: true });
+    await showFolder(tabIdOf(tab), folderId, revealPane);
   }
   if (windowId != null) {
     await browser.windows.update(windowId, { focused: true }).catch(() => {});

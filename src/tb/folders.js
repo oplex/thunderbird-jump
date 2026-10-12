@@ -3,6 +3,7 @@
 // Nothing here moves, copies, renames or deletes messages or folders.
 
 import { splitFolderPath } from "../lib/parse.js";
+import { hasFolderIds, legacyRootId, folderIdOf, folderArg, specialUseOf } from "./compat.js";
 
 // Flatten every account's folder tree into palette entries:
 // { id, name, accountId, accountName, segments, specialUse, isRoot, isVirtual }
@@ -11,9 +12,9 @@ export async function loadFolders() {
   const out = [];
   for (const account of accounts) {
     const root = account.rootFolder;
-    if (!root) continue;
+    if (!root && hasFolderIds()) continue;
     out.push({
-      id: root.id,
+      id: root ? root.id : legacyRootId(account.id),
       name: account.name,
       accountId: account.id,
       accountName: account.name,
@@ -22,8 +23,9 @@ export async function loadFolders() {
       isRoot: true,
       isVirtual: false,
     });
-    let subs = root.subFolders;
-    if (!subs) subs = await browser.folders.getSubFolders(root.id, true);
+    // Thunderbird 115: no rootFolder, the top-level folders are `account.folders`.
+    let subs = root ? root.subFolders : account.folders;
+    if (!subs) subs = await browser.folders.getSubFolders(root ? root.id : account, true);
     walk(subs, account, [account.name], out);
   }
   return out;
@@ -32,15 +34,16 @@ export async function loadFolders() {
 function walk(folders, account, parentSegments, out) {
   for (const f of folders ?? []) {
     const segments = [...parentSegments, f.name];
+    const specialUse = specialUseOf(f);
     out.push({
-      id: f.id,
+      id: folderIdOf(f),
       name: f.name,
       accountId: account.id,
       accountName: account.name,
       segments,
-      specialUse: f.specialUse ?? [],
+      specialUse,
       isRoot: false,
-      isVirtual: !!f.isVirtual,
+      isVirtual: !!f.isVirtual || specialUse.includes("virtual"),
     });
     walk(f.subFolders, account, segments, out);
   }
@@ -57,17 +60,16 @@ export async function createFolderPath(parent, path) {
   const segments = Array.isArray(path) ? path : splitFolderPath(path);
   if (!segments.length) throw new Error("Folder name is empty");
   if (parent.isVirtual) throw new Error("Cannot create folders inside a saved search");
-  // MV3 folders.create/getSubFolders take a MailFolderId; for an account
-  // that is the id of its root folder.
+  // Thunderbird 121+ takes folder ids (an account's root folder id for the
+  // top level); 115 takes folder / account objects (see compat.js).
   let target = parent.id;
-  let folder = null;
   for (const name of segments) {
-    const children = await browser.folders.getSubFolders(target, false);
+    const arg = await folderArg(target);
+    const children = await browser.folders.getSubFolders(arg, false);
     const existing = children.find((c) => c.name.toLowerCase() === name.toLowerCase());
-    folder = existing ?? (await browser.folders.create(target, name));
-    target = folder.id;
+    target = folderIdOf(existing ?? (await browser.folders.create(arg, name)));
   }
-  return folder.id;
+  return target;
 }
 
 const SPECIAL_ICONS = {

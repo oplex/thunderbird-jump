@@ -29,14 +29,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [140.7.1esr, latest-esr]
+        # 115.5.1 runs the Manifest V2 build (scripts/manifest-mv2.mjs).
+        version: [140.7.1esr, latest-esr, 115.5.1]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Install Thunderbird runtime libraries and Dovecot (IMAP test server)
-        run: sudo apt-get update && sudo apt-get install -y libgtk-3-0 libdbus-glib-1-2 libasound2t64 libx11-xcb1 dovecot-imapd
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-0 libdbus-glib-1-2 libasound2t64 libx11-xcb1 libxtst6 dovecot-imapd
       - name: Download Thunderbird ${{ matrix.version }}
         run: echo "TB_BIN=$(sh scripts/fetch-thunderbird.sh ${{ matrix.version }})" >> "$GITHUB_ENV"
       - run: node test/integration/run.mjs

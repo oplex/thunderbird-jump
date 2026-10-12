@@ -105,12 +105,19 @@ export async function localTests(windowId) {
   });
 
   await check("palette: Shift+Enter opens the folder in a new tab", async () => {
-    const before = await browser.mailTabs.query({});
+    const beta = await at("JumpTest/Clients/Beta");
     const p = await openPalette(windowId);
     await type(p, "jt beta");
+    if (typeof browser.mailTabs.create !== "function") {
+      // Thunderbird 115 can't open mail tabs for add-ons: it jumps in place.
+      press(p, "Enter", { shiftKey: true });
+      await closed(p);
+      assert((await shown()) === beta.id, "did not jump to Beta");
+      return;
+    }
+    const before = await browser.mailTabs.query({});
     press(p, "Enter", { shiftKey: true });
     await closed(p);
-    const beta = await at("JumpTest/Clients/Beta");
     const tab = await waitFor(async () => {
       const now = await browser.mailTabs.query({});
       return now.length > before.length && now.find((t) => !before.some((b) => b.tabId === t.tabId));
