@@ -30,7 +30,12 @@ export async function quickTests(windowId, root) {
          // A real (trusted) right-click on the first folder row.
          const r = tree.getBoundingClientRect();
          tree.ownerGlobal.windowUtils.sendMouseEvent("contextmenu", r.left + 40, r.top + 12, 2, 1, 0);
-         await shown;
+         const timeout = (ms) => new Promise((res) => win.setTimeout(() => res("timeout"), ms));
+         // 115 ignores the synthesized right-click; open the popup on the tree there.
+         if ((await Promise.race([shown, timeout(3000)])) === "timeout") {
+           menu.openPopup(tree, "overlap", 20, 20, true, false);
+           await shown;
+         }
          await new Promise((res) => win.setTimeout(res, 500));
          const out = [...menu.querySelectorAll("menu, menuitem")].map((m) => m.getAttribute("label"));
          menu.hidePopup();
