@@ -8,6 +8,8 @@
 // Actions:
 //   { op: "jump", folderId }               { op: "set", name, folderId }
 //   { op: "delete", name }                 { op: "create", parentId, segments }
+// Rows from the user's lists also carry `remove: { list, key }` (× / Delete)
+// and their headers `clear: list` ("Clear" link), list = shortcut|recent|moveTarget.
 
 import { parseInput, matchShortcuts, compareShortcutKeys, shortcutKey } from "./parse.js";
 import { rankFolders, fold } from "./fuzzy.js";
@@ -56,6 +58,8 @@ function shortcutRows(ctx, list, makeAction) {
   });
 }
 
+const removable = (rows, list, keyOf) => rows.map((r) => ({ ...r, remove: { list, key: keyOf(r) } }));
+
 function searchFolders(ctx, query, filter) {
   const recentRank = new Map(ctx.recent.map((id, i) => [id, i]));
   const boost = (e) => (recentRank.has(e.id) ? Math.max(0, 40 - recentRank.get(e.id) * 3) : 0);
@@ -69,12 +73,12 @@ function homeRows(ctx) {
   if (keys.length) {
     rows.push({ type: "header", text: "Shortcuts" });
     const list = keys.map((k) => ({ key: k, ...ctx.shortcuts[k] }));
-    rows.push(...shortcutRows(ctx, list, (s) => ({ op: "jump", folderId: s.folderId })));
+    rows.push(...removable(shortcutRows(ctx, list, (s) => ({ op: "jump", folderId: s.folderId })), "shortcut", (r) => r.badge));
   }
   const recent = ctx.recent.map((id) => ctx.byId.get(id)).filter(Boolean);
   if (recent.length) {
-    rows.push({ type: "header", text: "Recent" });
-    for (const e of recent) rows.push(folderRow(e, { op: "jump", folderId: e.id }));
+    rows.push({ type: "header", text: "Recent", clear: "recent" });
+    for (const e of recent) rows.push(folderRow(e, { op: "jump", folderId: e.id }, { remove: { list: "recent", key: e.id } }));
   }
   if (!rows.length) rows.push({ type: "info", text: "Type to search folders · ? for help" });
   return rows;
@@ -137,7 +141,7 @@ export function buildRows(input, ctx) {
       const jump = (e) => ({ op: "jump", folderId: e.id });
       rows.push(...rankedRows(exactName, jump, badges));
       if (recent.length) {
-        rows.push({ type: "header", text: "Recent" }, ...rankedRows(recent, jump, badges));
+        rows.push({ type: "header", text: "Recent", clear: "recent" }, ...removable(rankedRows(recent, jump, badges), "recent", (r) => r.entry.id));
         if (others.length) rows.push({ type: "header", text: "Folders" });
       }
       rows.push(...rankedRows(others, jump, badges));

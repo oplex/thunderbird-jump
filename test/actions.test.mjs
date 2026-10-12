@@ -196,3 +196,26 @@ test("falls back to the All Folders view when the folder isn't listed", async ()
   await runAction(row.action, state);
   assert.deepEqual(modes.slice(0, 2), [undefined, "all"]);
 });
+
+test("lists can be edited from the palette: remove and clear", async () => {
+  await store.setShortcut("1", fake.ids.clients, "x");
+  await store.pushRecent(fake.ids.inbox);
+  await store.pushRecent(fake.ids.clients);
+  let state = await makeState();
+  const home = buildRows("", state);
+  const recentHeader = home.find((r) => r.type === "header" && r.text === "Recent");
+  assert.equal(recentHeader.clear, "recent");
+  const recentRow = home.find((r) => r.remove?.list === "recent" && r.entry.id === fake.ids.inbox);
+  const res = await runAction({ op: "remove", ...recentRow.remove }, state);
+  assert.match(res.message, /Removed “Inbox” from Recent/);
+  assert.deepEqual(await store.getRecent(), [fake.ids.clients]);
+
+  const shortcutRow = home.find((r) => r.remove?.list === "shortcut");
+  assert.deepEqual(shortcutRow.remove, { list: "shortcut", key: "1" });
+  await runAction({ op: "remove", ...shortcutRow.remove }, state);
+  assert.equal(await store.getShortcut("1"), null);
+
+  state = await makeState();
+  await runAction({ op: "clear", list: "recent" }, state);
+  assert.deepEqual(await store.getRecent(), []);
+});

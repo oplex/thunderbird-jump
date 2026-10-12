@@ -93,3 +93,6 @@ ul.targets li::before { content: "➜"; color: var(--dim); margin-right: 6px; }
 ul.targets li { justify-content: flex-start; }
 ul.targets li .label { flex: 1; }
 .ghost { position: fixed; top: -100px; left: 0; padding: 4px 10px; border-radius: 6px; background: var(--accent); color: var(--accent-fg); font-size: 12px; font-weight: 600; }
+ul.targets li .remove { visibility: hidden; border: 0; background: none; padding: 0 4px; color: var(--dim); }
+ul.targets li:hover .remove { visibility: visible; }
+ul.targets li .remove:hover { color: var(--fg); }

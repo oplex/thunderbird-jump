@@ -159,3 +159,19 @@ body.window #palette { max-height: none; }
 .tool:hover { background: var(--badge); color: var(--fg); }
 .tool kbd { font: 11px ui-monospace, Menlo, Consolas, monospace; opacity: .8; }
 .tool kbd:empty { display: none; }
+
+/* × on removable rows, "Clear" on list headers */
+#list li .remove, #list li.header .clear {
+  border: 0;
+  background: transparent;
+  color: var(--dim);
+  cursor: pointer;
+  font: inherit;
+}
+#list li .remove { visibility: hidden; flex: none; font-size: 16px; line-height: 1; padding: 2px 6px; border-radius: 5px; }
+#list li:hover .remove, #list li.selected .remove { visibility: visible; }
+#list li.selected .remove { color: var(--sel-fg); }
+#list li .remove:hover { background: rgba(127, 127, 127, .25); }
+#list li.header { display: flex; justify-content: space-between; align-items: baseline; }
+#list li.header .clear { font-size: 11px; text-transform: none; letter-spacing: 0; padding: 0 4px; }
+#list li.header .clear:hover { color: var(--fg); text-decoration: underline; }

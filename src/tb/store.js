@@ -68,6 +68,10 @@ export async function pushRecent(folderId) {
   await set("recent", list.slice(0, recentLimit));
 }
 
+export async function removeRecent(folderId) {
+  await set("recent", (await getRecent()).filter((id) => id !== folderId));
+}
+
 export function clearRecent() {
   return set("recent", []);
 }

@@ -70,6 +70,15 @@ export async function getMoveTargets() {
   return (await browser.storage.local.get("moveTargets")).moveTargets ?? [];
 }
 
+export async function removeMoveTarget(folderId) {
+  const list = (await getMoveTargets()).filter((id) => id !== folderId);
+  await browser.storage.local.set({ moveTargets: list });
+}
+
+export async function clearMoveTargets() {
+  await browser.storage.local.set({ moveTargets: [] });
+}
+
 async function pushMoveTarget(folderId) {
   const list = (await getMoveTargets()).filter((id) => id !== folderId);
   list.unshift(folderId);

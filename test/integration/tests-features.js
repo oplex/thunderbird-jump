@@ -3,7 +3,8 @@
 
 import { createFolderPath } from "../../src/tb/folders.js";
 import { jumpToFolder, currentFolderId } from "../../src/tb/tabs.js";
-import { check, assert, waitFor, sleep, byPath, openPalette, type, press, closed, headerTexts, chrome } from "./util.js";
+import { check, assert, waitFor, sleep, byPath, openPalette, type, press, closed, headerTexts, chrome, statusText } from "./util.js";
+import { setShortcut, getShortcut, getRecent } from "../../src/tb/store.js";
 import { PANE_STATE, COLLAPSE } from "./pane-scripts.js";
 
 export async function featureTests(windowId, root) {
@@ -60,6 +61,34 @@ export async function featureTests(windowId, root) {
     const rows = await type(p, "filler");
     assert(headerTexts(p)[0] === "Recent", `headers: ${headerTexts(p)}`);
     assert(rows[0]?.includes("Filler 07"), `first row was ${rows[0]}`);
+    press(p, "Escape");
+    await closed(p);
+  });
+
+  await check("palette: Delete, × and Clear edit Shortcuts and Recent", async () => {
+    await setShortcut("tmp", (await at("Trash")).id, "Local Folders › Trash");
+    let p = await openPalette(windowId);
+    await type(p, "");
+    const selectedText = () => p.doc.querySelector("#list li.selected")?.textContent ?? "";
+    // Shortcuts are listed first: j1, then tmp.
+    for (let i = 0; i < 5 && !selectedText().includes("tmp"); i++) press(p, "ArrowDown");
+    assert(selectedText().includes("tmp"), `selected: ${selectedText()}`);
+    press(p, "Delete");
+    await statusText(p, "Deleted shortcut “tmp”");
+    assert((await getShortcut("tmp")) === null, "tmp not deleted");
+    assert((await getShortcut("1")) !== null, "j1 must stay");
+
+    const recentBefore = await getRecent();
+    assert(recentBefore.length >= 2, `need recent folders, have ${recentBefore.length}`);
+    const firstRecent = [...p.doc.querySelectorAll("#list li.item")].find((li) => li.querySelector(".remove") && !li.querySelector(".badge"));
+    firstRecent.querySelector(".remove").click();
+    await statusText(p, "from Recent");
+    assert((await getRecent()).length === recentBefore.length - 1, "× did not remove one recent folder");
+
+    const clear = [...p.doc.querySelectorAll("#list li.header")].find((h) => h.textContent.startsWith("Recent"))?.querySelector(".clear");
+    clear.click();
+    await statusText(p, "Cleared Recent");
+    assert((await getRecent()).length === 0, "Recent not cleared");
     press(p, "Escape");
     await closed(p);
   });

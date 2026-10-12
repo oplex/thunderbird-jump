@@ -151,7 +151,7 @@ the options.
 | Input | Result |
 | --- | --- |
 | `inv` | Fuzzy-search every folder in every account (recent folders rank higher) |
-| *(empty)* | Your shortcuts and recent folders |
+| *(empty)* | Your shortcuts and recent folders (**Clear** next to a heading empties that list) |
 | *(while searching)* | An exact name match first, then matching recent folders, then the rest |
 | `j1`, `j2` … | Jump to numbered shortcut 1, 2 … |
 | `:j name` | Jump to the shortcut called `name` (`:j` or `:jl` lists them all) |
@@ -181,6 +181,7 @@ duplicates.
 | `Alt+1` … `Alt+9` | Jump straight to shortcut 1 … 9 |
 | `↑ ↓`, `Tab`, `Ctrl+J/K` | Move the selection |
 | `Esc` | Leave create mode, or close |
+| `Delete` (or the × on hover) | Remove the highlighted item from Shortcuts, Recent or Recently moved to |
 
 After creating a folder it jumps there (you can turn that off in the options).
 The options page also lists and deletes shortcuts.

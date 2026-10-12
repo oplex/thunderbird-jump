@@ -3,7 +3,7 @@
 
 import { pathLabel } from "../tb/folders.js";
 import { getShortcuts, getSettings } from "../tb/store.js";
-import { canMove, enableMoving, moveMessages, undoMove, getMoveTargets } from "../tb/messages.js";
+import { canMove, enableMoving, moveMessages, undoMove, getMoveTargets, removeMoveTarget } from "../tb/messages.js";
 import { compareShortcutKeys } from "../lib/parse.js";
 import { pickFolder } from "./picker.js";
 
@@ -71,17 +71,17 @@ export function createMover(ui) {
     const [shortcuts, recent] = await Promise.all([getShortcuts(), getMoveTargets()]);
     const items = [];
     const seen = new Set();
-    const add = (id, badge = "") => {
+    const add = (id, badge = "", removable = false) => {
       const e = state.byId.get(id);
       if (!e || e.isRoot || e.isVirtual || seen.has(id) || items.length >= MAX_TARGETS) return;
       seen.add(id);
-      items.push({ e, badge });
+      items.push({ e, badge, removable });
     };
     for (const key of Object.keys(shortcuts).sort(compareShortcutKeys)) add(shortcuts[key].folderId, /^\d+$/.test(key) ? `j${key}` : shortcuts[key].name);
-    for (const id of recent) add(id);
+    for (const id of recent) add(id, "", true);
     const ul = document.getElementById("quickTargets");
     ul.replaceChildren(
-      ...items.map(({ e, badge }) => {
+      ...items.map(({ e, badge, removable }) => {
         const li = document.createElement("li");
         li.dataset.folderId = e.id;
         li.title = `${pathLabel(e)}\nDrop messages here, or click to move the selection`;
@@ -94,6 +94,18 @@ export function createMover(ui) {
           b.className = "count";
           b.textContent = badge;
           li.append(b);
+        }
+        if (removable) {
+          const x = document.createElement("button");
+          x.className = "remove";
+          x.textContent = "×";
+          x.title = "Remove from this list";
+          x.addEventListener("click", async (ev) => {
+            ev.stopPropagation();
+            await removeMoveTarget(e.id);
+            renderTargets();
+          });
+          li.append(x);
         }
         li.addEventListener("click", () => moveTo(selectedMessages(), e.id));
         return li;

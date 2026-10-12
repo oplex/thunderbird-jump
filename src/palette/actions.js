@@ -5,7 +5,8 @@
 import { createFolderPath, pathLabel } from "../tb/folders.js";
 import { jumpToFolder } from "../tb/tabs.js";
 import { setShortcut, deleteShortcut, pushRecent } from "../tb/store.js";
-import { moveMessages, undoMove, enableMoving } from "../tb/messages.js";
+import { moveMessages, undoMove, enableMoving, removeMoveTarget, clearMoveTargets } from "../tb/messages.js";
+import { removeRecent, clearRecent } from "../tb/store.js";
 import { openManager } from "../tb/tabs.js";
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
@@ -72,6 +73,23 @@ export async function runAction(action, state, { newTab = false } = {}) {
     case "manager":
       await openManager();
       return { close: true };
+
+    // Remove one item from (or clear) the user's lists in the palette.
+    case "remove": {
+      const name = state.byId.get(action.key)?.name ?? action.key;
+      if (action.list === "shortcut") {
+        await deleteShortcut(action.key);
+        return { close: false, reload: true, keep: true, message: `Deleted shortcut “${action.key}”` };
+      }
+      if (action.list === "moveTarget") await removeMoveTarget(action.key);
+      else await removeRecent(action.key);
+      return { close: false, reload: true, keep: true, message: `Removed “${name}” from ${action.list === "moveTarget" ? "Recently moved to" : "Recent"}` };
+    }
+
+    case "clear":
+      if (action.list === "moveTarget") await clearMoveTargets();
+      else await clearRecent();
+      return { close: false, reload: true, keep: true, message: action.list === "moveTarget" ? "Cleared Recently moved to" : "Cleared Recent" };
 
     case "options":
       await browser.runtime.openOptionsPage();

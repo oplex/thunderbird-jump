@@ -70,18 +70,19 @@ export function buildMoveRows(input, ctx) {
   if (p.kind === "home") {
     const rows = [];
     const seen = new Set();
-    const add = (heading, ids) => {
+    const add = (heading, ids, list, keyOf = (e) => e.id) => {
       const entries = ids.map((id) => byId.get(id)).filter((e) => e && allowed(e) && !seen.has(e.id));
       if (!entries.length) return;
-      rows.push({ type: "header", text: heading });
+      rows.push({ type: "header", text: heading, ...(list !== "shortcut" ? { clear: list } : {}) });
       for (const e of entries) {
         seen.add(e.id);
-        rows.push(targetRow(e, ctx));
+        rows.push(targetRow(e, ctx, { remove: { list, key: keyOf(e) } }));
       }
     };
-    add("Recently moved to", ctx.moveTargets ?? []);
-    add("Shortcuts", Object.values(ctx.shortcuts).map((s) => s.folderId));
-    add("Recent folders", ctx.recent);
+    const shortcutName = new Map(Object.values(ctx.shortcuts).map((s) => [s.folderId, s.name]));
+    add("Recently moved to", ctx.moveTargets ?? [], "moveTarget");
+    add("Shortcuts", Object.values(ctx.shortcuts).map((s) => s.folderId), "shortcut", (e) => shortcutName.get(e.id));
+    add("Recent folders", ctx.recent, "recent");
     if (!rows.length) rows.push({ type: "info", text: "Type a folder name to move the messages there" });
     return rows;
   }

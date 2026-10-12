@@ -54,7 +54,8 @@ export function rowTexts(p) {
 }
 
 export function headerTexts(p) {
-  return [...p.doc.querySelectorAll("#list li.header")].map((li) => li.textContent);
+  // Heading text only (not the "Clear" link inside it).
+  return [...p.doc.querySelectorAll("#list li.header")].map((li) => li.firstChild?.textContent ?? "");
 }
 
 // Runs `script` (a function body) with chrome privileges via the runner's

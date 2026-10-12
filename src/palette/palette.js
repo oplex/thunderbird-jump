@@ -69,10 +69,16 @@ function refresh() {
 }
 
 function draw() {
-  renderRows(list, state.rows, state.selected, (i, ev) => {
-    state.selected = i;
-    execute({ newTab: ev.shiftKey });
-  });
+  renderRows(
+    list,
+    state.rows,
+    state.selected,
+    (i, ev) => {
+      state.selected = i;
+      execute({ newTab: ev.shiftKey });
+    },
+    { onRemove: (i) => editList({ op: "remove", ...state.rows[i].remove }, i), onClear: (l) => editList({ op: "clear", list: l }, 0) },
+  );
   const parent = state.byId.get(state.createParentId);
   const badge = parent ? `New in ${parent.name} ›` : state.moving ? "Move to ›" : "";
   modeBadge.hidden = !badge;
@@ -158,6 +164,20 @@ function execute({ newTab = false } = {}) {
   });
 }
 
+// Remove an item from / clear one of the user's lists, keeping the palette
+// (typed text, position) as it is.
+function editList(action, index) {
+  guarded(async () => {
+    const result = await runAction(action, state);
+    await reload();
+    state.rows = buildRows(input.value, state);
+    const selectable = state.rows.map((r, i) => (isSelectable(r) ? i : -1)).filter((i) => i >= 0);
+    state.selected = selectable.find((i) => i >= index) ?? selectable.at(-1) ?? -1;
+    draw();
+    setStatus(result.message ?? "", "ok");
+  });
+}
+
 // Alt+1‥9: jump straight to a numbered shortcut (or move there in move mode).
 function quickJump(digit) {
   guarded(async () => {
@@ -210,6 +230,10 @@ function onKey(ev) {
   } else if (ev.altKey && /^[1-9]$/.test(key)) {
     ev.preventDefault();
     quickJump(key);
+  } else if (key === "Delete" && state.rows[state.selected]?.remove && input.selectionStart === input.value.length && input.selectionEnd === input.value.length) {
+    // Delete removes the highlighted item when there's no text after the caret.
+    ev.preventDefault();
+    editList({ op: "remove", ...state.rows[state.selected].remove }, state.selected);
   } else if (key === "Escape") {
     ev.preventDefault();
     if (state.createParentId != null) leaveCreateMode();

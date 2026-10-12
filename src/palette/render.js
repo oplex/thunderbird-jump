@@ -69,12 +69,26 @@ export function isSelectable(row) {
   return row.type === "item" && row.action != null;
 }
 
-export function renderRows(list, rows, selected, onPick) {
+function smallButton(className, text, title, onClick) {
+  const b = el("button", className, text);
+  b.title = title;
+  b.tabIndex = -1;
+  b.addEventListener("mousedown", (ev) => ev.preventDefault());
+  b.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    onClick();
+  });
+  return b;
+}
+
+// extra: { onRemove(index), onClear(list) } for rows from the user's lists.
+export function renderRows(list, rows, selected, onPick, extra = {}) {
   list.replaceChildren();
   rows.forEach((row, i) => {
     const li = el("li", row.type);
     if (row.type === "item") {
       renderItem(li, row);
+      if (row.remove && extra.onRemove) li.append(smallButton("remove", "×", "Remove from this list (Delete)", () => extra.onRemove(i)));
       li.setAttribute("role", "option");
       if (i === selected) {
         li.classList.add("selected");
@@ -86,6 +100,7 @@ export function renderRows(list, rows, selected, onPick) {
       }
     } else {
       li.textContent = row.text;
+      if (row.clear && extra.onClear) li.append(smallButton("clear", "Clear", "Remove everything in this list", () => extra.onClear(row.clear)));
     }
     list.append(li);
   });

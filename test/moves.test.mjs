@@ -126,3 +126,16 @@ test("undo row disappears after 30 minutes or once undone", () => {
   assert.equal(undoRow(e, 31 * 60 * 1000), null);
   assert.equal(undoRow({ ...e, undone: true }, 1000), null);
 });
+
+test("recently-moved-to targets can be removed and cleared", async () => {
+  mail.select([mail.add(fake.ids.inbox, "One")]);
+  let state = await moveState();
+  await runAction({ op: "move", folderId: fake.ids.clients }, state);
+  mail.select([mail.add(fake.ids.inbox, "Two")]);
+  state = await moveState();
+  const home = buildRows("", state);
+  assert.deepEqual(home[0], { type: "header", text: "Recently moved to", clear: "moveTarget" });
+  assert.deepEqual(home[1].remove, { list: "moveTarget", key: fake.ids.clients });
+  await runAction({ op: "remove", ...home[1].remove }, state);
+  assert.deepEqual(await msgs.getMoveTargets(), []);
+});
