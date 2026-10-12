@@ -215,8 +215,12 @@ async function init() {
   });
   wire();
   mover.renderTargets();
-  const q = new URLSearchParams(location.search).get("q");
+  const params = new URLSearchParams(location.search);
+  const q = params.get("q");
   if (q) $("q").value = state.filters.text = q;
+  // ?folder=<id> (folder pane → ThunderJump → Search messages here).
+  const scope = state.byId.get(params.get("folder"));
+  if (scope) state.chips.push({ facet: "scope", key: scope.id, label: scope.segments.join(" › ") });
   $("q").focus();
   schedule(0);
 }

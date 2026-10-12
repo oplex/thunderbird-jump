@@ -8,6 +8,7 @@
 
 import { parseInput, matchShortcuts, shortcutKey } from "./parse.js";
 import { rankFolders } from "./fuzzy.js";
+import { expandSegments } from "./template.js";
 
 const UNDO_WINDOW_MS = 30 * 60 * 1000;
 const label = (e) => e.segments.join(" › ");
@@ -31,8 +32,19 @@ export function undoRow(entry, now = Date.now()) {
   };
 }
 
-// Folders messages can go into: not account roots or saved searches.
-const isTarget = (e) => !e.isRoot && !e.isVirtual;
+// Why messages can't go into `e` (null when they can): account roots and
+// saved searches hold no messages, and moving into the source does nothing.
+export function whyNotTarget(e, sources = new Set()) {
+  if (e.isRoot) return `Account root · messages can't go here · type “${e.name} > New” to make a folder`;
+  if (e.isVirtual) return "Saved search · not a real folder, messages can't go here";
+  if (sources.size === 1 && sources.has(e.id)) return "The messages are already in this folder";
+  return null;
+}
+
+// Shown grayed out, with the reason, instead of silently left out.
+function blockedRow(entry, reason, extra = {}) {
+  return { type: "item", entry, detail: reason, disabled: true, ...extra };
+}
 
 function targetRow(entry, ctx, extra = {}) {
   return { type: "item", entry, action: { op: "move", folderId: entry.id }, ...extra };
@@ -58,13 +70,18 @@ export function buildMoveRows(input, ctx) {
   if (!moving.length) return [{ type: "info", text: "No messages are selected. Select some in the message list first." }];
 
   const p = parseInput(input);
+  if (p.segments) p.segments = expandSegments(p.segments, ctx.now);
   const sources = new Set(moving.map((m) => m.folderId));
-  const allowed = (e) => isTarget(e) && !(sources.size === 1 && sources.has(e.id));
+  const allowed = (e) => !whyNotTarget(e, sources);
+  const rowFor = (e, extra) => {
+    const reason = whyNotTarget(e, sources);
+    return reason ? blockedRow(e, reason, extra) : targetRow(e, ctx, extra);
+  };
 
   if (p.kind === "jump-shortcut") {
-    const list = matchShortcuts(ctx.shortcuts, p.name).filter((s) => byId.has(s.folderId) && allowed(byId.get(s.folderId)));
+    const list = matchShortcuts(ctx.shortcuts, p.name).filter((s) => byId.has(s.folderId));
     if (!list.length) return [{ type: "info", text: p.name ? `No shortcut “${p.name}”` : "No shortcuts yet" }];
-    return list.map((s) => targetRow(byId.get(s.folderId), ctx, { badge: s.name }));
+    return list.map((s) => rowFor(byId.get(s.folderId), { badge: s.name }));
   }
 
   if (p.kind === "home") {
@@ -87,18 +104,37 @@ export function buildMoveRows(input, ctx) {
     return rows;
   }
 
-  if (p.kind !== "search") return [{ type: "info", text: "Type a folder name, j1 or :j name" }];
+  if (p.kind === "create-in") return createAndMoveRows(p, ctx);
+  if (p.kind !== "search") return [{ type: "info", text: "Type a folder name, j1 or :j name · parent > New makes a folder" }];
   const rows = [];
   const exact = ctx.shortcuts[shortcutKey(p.query)];
-  if (exact && byId.has(exact.folderId) && allowed(byId.get(exact.folderId))) {
-    rows.push(targetRow(byId.get(exact.folderId), ctx, { badge: exact.name }));
-  }
+  if (exact && byId.has(exact.folderId)) rows.push(rowFor(byId.get(exact.folderId), { badge: exact.name }));
   const targetRank = new Map((ctx.moveTargets ?? []).map((id, i) => [id, i]));
   const boost = (e) => (targetRank.has(e.id) ? Math.max(0, 60 - targetRank.get(e.id) * 4) : 0);
-  for (const r of rankFolders(ctx.folders.filter(allowed), p.query, { boost })) {
+  for (const r of rankFolders(ctx.folders, p.query, { boost })) {
     if (exact && r.entry.id === exact.folderId) continue;
-    rows.push(targetRow(r.entry, ctx, { positions: r.positions }));
+    rows.push(rowFor(r.entry, { positions: r.positions }));
   }
   if (!rows.length) rows.push({ type: "info", text: `No folder matches “${p.query}”` });
   return rows;
+}
+
+// "clients > Acme/2026": pick the parent (account roots too), create, move.
+function createAndMoveRows(p, ctx) {
+  const parents = ctx.folders.filter((e) => !e.isVirtual);
+  const ranked = p.query ? rankFolders(parents, p.query) : parents.filter((e) => e.isRoot).map((entry) => ({ entry, positions: [] }));
+  if (!ranked.length) return [{ type: "info", text: `No parent folder matches “${p.query}”` }];
+  if (!p.segments.length) {
+    return [{ type: "info", text: "Type the new folder name after “>” (use / to nest)" }, ...ranked.map((r) => ({ type: "item", entry: r.entry, positions: r.positions }))];
+  }
+  const name = p.segments.join(" / ");
+  return ranked.map((r) => ({
+    type: "item",
+    icon: "➕",
+    entry: r.entry,
+    positions: r.positions,
+    title: `New “${name}” in ${r.entry.name}, move there`,
+    detail: label(r.entry),
+    action: { op: "create-move", parentId: r.entry.id, segments: p.segments },
+  }));
 }

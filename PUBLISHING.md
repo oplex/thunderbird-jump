@@ -57,7 +57,10 @@ covers every supported version.
 >
 > - Fuzzy search across all accounts; recent folders first
 > - Save shortcuts: :jj1 or :jj work, then j1 or :j work to jump
-> - Create folders on the fly: "clients > Acme/2026"
+> - Create folders on the fly: "clients > Acme/2026", with date patterns
+>   like {YYYY}/{MM}
+> - Right-click a folder to save it as j1…j9 or a named shortcut, make a
+>   subfolder, or search its messages
 > - Optional: move selected messages (Alt+Shift+M, right-click, or drag and
 >   drop in the Manager), with confirm and undo
 > - ThunderJump Manager (Alt+Shift+F): search mail and folders with filters

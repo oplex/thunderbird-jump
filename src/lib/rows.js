@@ -1,6 +1,6 @@
 // Turns parsed input + palette state into list rows. Pure (no browser APIs).
 //
-// ctx = { folders, byId, shortcuts, recent, currentId, createParentId }
+// ctx = { folders, byId, shortcuts, recent, currentId, createParentId, setTargetId }
 // Row kinds:
 //   { type: "header", text }
 //   { type: "info", text }
@@ -11,7 +11,8 @@
 // Rows from the user's lists also carry `remove: { list, key }` (× / Delete)
 // and their headers `clear: list` ("Clear" link), list = shortcut|recent|moveTarget.
 
-import { parseInput, matchShortcuts, compareShortcutKeys, shortcutKey } from "./parse.js";
+import { parseInput, matchShortcuts, compareShortcutKeys, shortcutKey, splitFolderPath } from "./parse.js";
+import { expandSegments } from "./template.js";
 import { rankFolders, fold } from "./fuzzy.js";
 import { buildMoveRows, undoRow } from "./move-rows.js";
 
@@ -24,11 +25,13 @@ export const HELP = [
   [":jd name", "delete a shortcut"],
   [":new A/B", "create A/B inside the current folder"],
   ["query > A/B", "find a parent folder, create A/B inside it"],
+  ["{YYYY}/{MM}", "date patterns in new names: {YYYYMMDD}, {YYYYMMDDHHMM}, {MMM}, {WW}, {Q}"],
   ["Ctrl+N", "create a subfolder inside the highlighted folder"],
   ["Shift+Enter", "open the folder in a new tab"],
   [":keys", "change keyboard shortcuts and settings"],
   [":backup", "export, import or auto-backup your settings"],
   [":move", "move the selected messages (Alt+Shift+M)"],
+  ["move name", "move the selected messages to a folder (also :m name)"],
   [":undo", "undo the last move (Ctrl+Z)"],
   [":manage", "open the ThunderJump Manager (search folders and mail)"],
 ];
@@ -96,7 +99,7 @@ export function buildRows(input, ctx) {
 
   if (ctx.createParentId != null) {
     const parent = ctx.byId.get(ctx.createParentId);
-    const segments = input.split("/").map((s) => s.trim()).filter(Boolean);
+    const segments = expandSegments(splitFolderPath(input), ctx.now);
     if (!parent) return [{ type: "info", text: "Parent folder not found" }];
     if (!segments.length) return [{ type: "info", text: `Type a name for the new folder in ${label(parent)} (use / to nest)` }];
     return [{ type: "item", title: `Create “${segments.join(" / ")}”`, detail: `in ${label(parent)}`, icon: "➕", action: { op: "create", parentId: parent.id, segments } }];
@@ -105,6 +108,7 @@ export function buildRows(input, ctx) {
   if (ctx.moving) return buildMoveRows(input, ctx);
 
   const p = parseInput(input);
+  if (p.segments) p.segments = expandSegments(p.segments, ctx.now);
   const undo = undoRow(ctx.lastMove);
   switch (p.kind) {
     case "home":
@@ -114,6 +118,7 @@ export function buildRows(input, ctx) {
       return [undo ?? { type: "info", text: "Nothing to undo" }];
 
     case "move-mode":
+      if (p.query) return [{ type: "item", icon: "➜", title: `Move the selected messages to “${p.query}”…`, detail: "pick the folder next", action: { op: "enter-move" } }];
       return [{ type: "item", icon: "➜", title: "Move the selected messages…", detail: "pick a folder next (Alt+Shift+M does this directly)", action: { op: "enter-move" } }];
 
     case "manager":
@@ -162,8 +167,9 @@ export function buildRows(input, ctx) {
       const existing = ctx.shortcuts[shortcutKey(p.name)];
       const note = existing ? ` (replaces ${existing.label ?? "old target"})` : "";
       if (p.query == null) {
-        if (!current) return [{ type: "info", text: "No folder is open in the mail tab" }];
-        return [folderRow(current, { op: "set", name: p.name, folderId: current.id }, { title: `Set “${p.name}” → ${current.name}`, detail: label(current) + note, badge: p.name })];
+        const target = ctx.byId.get(ctx.setTargetId) ?? current;
+        if (!target) return [{ type: "info", text: "No folder is open in the mail tab" }];
+        return [folderRow(target, { op: "set", name: p.name, folderId: target.id }, { title: `Set “${p.name}” → ${target.name}`, detail: label(target) + note, badge: p.name })];
       }
       const ranked = searchFolders(ctx, p.query, (e) => !e.isRoot);
       if (!ranked.length) return [{ type: "info", text: `No folder matches “${p.query}”` }];

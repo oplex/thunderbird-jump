@@ -2,6 +2,14 @@
 
 import { canMove, selectedMessages, getMoveTargets, lastUndoableMove } from "../tb/messages.js";
 import { describeSelection } from "../lib/move-rows.js";
+import { MOVE_PREFIX } from "../lib/parse.js";
+
+// "move inv" → "inv" (the folder to search for); null without the prefix.
+export function typedMoveQuery(text) {
+  const t = text.trimStart();
+  const m = MOVE_PREFIX.exec(t);
+  return m ? t.slice(m[0].length) : null;
+}
 
 export async function loadMoveState(state) {
   const [moveTargets, lastMove] = await Promise.all([getMoveTargets(), lastUndoableMove()]);

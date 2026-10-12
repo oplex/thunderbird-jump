@@ -13,9 +13,13 @@
  *   query > A/B        search a parent folder, create A/B inside it
  *   :keys, :backup     open the options page (keys, backup, settings)
  *   :move, :m          move the selected messages (when moving is turned on)
+ *   move name, :m name move the selected messages, searching "name" as target
  *   :undo, :u          undo the last move
  *   ? or :help         help
  */
+
+// "move inv", "mv inv", ":m inv", ":move inv" → move, searching "inv".
+export const MOVE_PREFIX = /^(?::m|:move|move|mv)\s+(?=\S)/i;
 
 export function shortcutKey(name) {
   return String(name).trim().toLowerCase();
@@ -36,6 +40,8 @@ export function parseInput(raw) {
   if (t === "?" || /^:h(elp)?$/i.test(t)) return { kind: "help" };
   if (/^:(keys|options|settings|backup|export|import)$/i.test(t)) return { kind: "options" };
   if (/^:(move|m)$/i.test(t)) return { kind: "move-mode" };
+  const mv = MOVE_PREFIX.exec(t);
+  if (mv) return { kind: "move-mode", query: t.slice(mv[0].length) };
   if (/^:(undo|u)$/i.test(t)) return { kind: "undo" };
   if (/^:(manage|manager|search|find)$/i.test(t)) return { kind: "manager" };
 

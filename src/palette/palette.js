@@ -8,7 +8,8 @@ import { resolveMailWindowId, currentFolderId, jumpToFolder } from "../tb/tabs.j
 import { getShortcuts, getRecent, getSettings, getShortcut, pushRecent } from "../tb/store.js";
 import { renderRows, isSelectable } from "./render.js";
 import { runAction } from "./actions.js";
-import { loadMoveState, startMove, renderSelection } from "./move-mode.js";
+import { loadMoveState, startMove, renderSelection, typedMoveQuery } from "./move-mode.js";
+import { presetFromMenu } from "./presets.js";
 
 const params = new URLSearchParams(location.search);
 const mode = params.get("mode") === "window" ? "window" : "popup";
@@ -38,6 +39,7 @@ const state = {
   confirmTarget: null,
   moveTargets: [],
   lastMove: null,
+  setTargetId: null, // folder for ":jj name" when opened from a folder's menu
 };
 
 function setStatus(text = "", kind = "") {
@@ -85,9 +87,10 @@ function draw() {
   hints.textContent = state.moving ? MOVE_HINTS : HINTS;
 }
 
+// Typed "move inv": keep what follows "move " as the folder search.
 async function enterMove() {
   await startMove(state);
-  input.value = "";
+  input.value = typedMoveQuery(input.value) ?? "";
   input.placeholder = "Move to folder…  (type a name, j1, :j name)";
   refresh();
 }
@@ -237,8 +240,9 @@ function onKey(ev) {
     if (state.createParentId != null) leaveCreateMode();
     else if (state.confirmTarget != null) leaveConfirm();
     else close();
-  } else if (key === "Backspace" && !input.value && state.createParentId != null) {
+  } else if (key === "Backspace" && !input.value && (state.createParentId != null || state.moving)) {
     ev.preventDefault();
+    state.moving = null;
     leaveCreateMode();
   }
 }
@@ -263,11 +267,13 @@ async function init() {
   state.currentId = currentId;
   input.addEventListener("input", () => {
     setStatus();
+    if (!state.moving && typedMoveQuery(input.value) != null) return guarded(enterMove);
     refresh();
   });
   input.addEventListener("keydown", onKey);
   wireTools();
   if (params.get("action") === "move") await enterMove();
+  presetFromMenu(params, state, input, setStatus);
   if (mode === "window" && settings.closeOnBlur) {
     window.addEventListener("blur", () => {
       if (!state.busy) close();

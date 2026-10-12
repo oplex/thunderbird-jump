@@ -6,6 +6,7 @@ import { writeBackupFile, hasDownloadsPermission } from "../tb/backup.js";
 import { undoMove, lastUndoableMove } from "../tb/messages.js";
 import { openManager } from "../tb/tabs.js";
 import { setupMenus, registerMenuHandlers } from "./menus.js";
+import { setupFolderMenu, registerFolderMenu } from "./folder-menu.js";
 
 const WIDTH = 640;
 const HEIGHT = 460;
@@ -31,13 +32,16 @@ async function spotlightWindowId() {
 }
 
 // `action`: "move" opens the palette in move mode for the selected messages.
-export async function openSpotlight(action = "") {
+// `extra`: more page parameters, e.g. { setFor: folderId } or { createIn: folderId }.
+export async function openSpotlight(action = "", extra = {}) {
   const existing = await spotlightWindowId();
+  const query = new URLSearchParams({ mode: "window", ...(action ? { action } : {}), ...extra });
   if (existing != null) {
-    if (!action) return browser.windows.update(existing, { focused: true });
+    if (!action && !Object.keys(extra).length) return browser.windows.update(existing, { focused: true });
     await browser.windows.remove(existing).catch(() => {});
   }
   const parentId = await resolveMailWindowId();
+  query.set("win", parentId ?? "");
   const parent = parentId == null ? null : await browser.windows.get(parentId);
   const geometry = { width: WIDTH, height: HEIGHT };
   if (parent?.width) {
@@ -46,7 +50,7 @@ export async function openSpotlight(action = "") {
   }
   const win = await browser.windows.create({
     type: "popup",
-    url: browser.runtime.getURL(`src/palette/palette.html?mode=window&win=${parentId ?? ""}${action ? `&action=${action}` : ""}`),
+    url: browser.runtime.getURL(`src/palette/palette.html?${query}`),
     allowScriptsToClose: true,
     ...geometry,
   });
@@ -142,4 +146,6 @@ browser.runtime.onMessage.addListener((msg) => {
 });
 
 registerMenuHandlers({ openSpotlight });
+registerFolderMenu({ openSpotlight });
 setupMenus();
+setupFolderMenu();

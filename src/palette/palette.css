@@ -97,6 +97,7 @@ body.window #palette { max-height: none; }
   color: var(--dim);
 }
 #list li.info { color: var(--dim); }
+#list li.disabled { opacity: .45; cursor: not-allowed; }
 #list li.selected { background: var(--sel); color: var(--sel-fg); }
 #list li.selected .path,
 #list li.selected .hl { color: var(--sel-fg); }

@@ -3,7 +3,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const LIMIT = 300;
-const SKIP = new Set([".git", "node_modules", "dist"]);
+const SKIP = new Set([".git", "node_modules", "dist", ".thunderbird"]);
 const EXT = /\.(m?js|json|html|css|sh|ya?ml|md|svg)$/;
 
 function* walk(dir) {

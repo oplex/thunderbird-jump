@@ -75,6 +75,12 @@ Thunderbird asks once for permission to read and move messages.
   shows what you're moving ("Moving 3 messages from Inbox" plus the subjects).
   Type part of a folder name and press Enter. `j1`, `:j name` and `Alt+1…9`
   work as targets too, and folders you often move to are listed first.
+- **Type it:** in the palette, `move inv` (or `mv inv`, `:m inv`) switches to
+  moving the selected messages and searches `inv` as the target.
+- **Into a new folder:** while moving, `clients > Acme {YYYY}` creates the
+  folder and moves the messages into it.
+- Account roots, saved searches and the folder the messages are already in
+  are shown grayed out with the reason; they can't be picked.
 - **Right-click style:** right-click the selected messages →
   **Move with ThunderJump…**, or **Move to ▸** your shortcuts and recent
   targets for a one-click move.
@@ -128,6 +134,31 @@ add-on no chance to ask first. The backup file is not deleted, though. When
 you install the add-on again, a welcome page opens with a **Restore from
 backup…** button.
 
+## Right-click a folder
+
+Right-click any folder in the folder pane → **ThunderJump**:
+
+- **Save as j1 … j9**: each slot shows what it points to now (`✓` = this folder)
+- **Save as named shortcut…**: opens the palette with `:jj ` ready for a name
+- **Remove shortcut …**: only the shortcuts that point to this folder
+- **New subfolder…**: opens the palette to type the name (`/` nests, date patterns work)
+- **Search messages here**: opens the Manager limited to this folder
+
+## Date patterns in new folder names
+
+Anywhere you create a folder, parts in braces become the date and time:
+
+| Pattern | Today, 7 Mar 2026 14:05 |
+| --- | --- |
+| `{YYYY}` `{YY}` `{MM}` `{M}` `{MMM}` | `2026` `26` `03` `3` `Mar` |
+| `{DD}` `{D}` `{HH}` `{mm}` `{ss}` | `07` `7` `14` `05` `09` |
+| `{WW}` `{Q}` | `10` (ISO week) `1` (quarter) |
+| `{YYYYMMDD}` `{YYYYMMDDHHMM}` | `20260307` `202603071405` (MM after HH = minutes) |
+
+For example `archive > {YYYY}/{MM}` or `:new Call {YYYY-MM-DD}`. The palette
+shows the filled-in name before you press Enter. Text outside braces is never
+changed.
+
 ## Opening it
 
 | Key | What it does |
@@ -138,8 +169,9 @@ backup…** button.
 | `Alt+Shift+M` | Move the selected messages (when moving is on) |
 | `Alt+Shift+Z` | Undo the last move |
 
-To change them, type `:keys` in the palette (or open the add-on's options).
-Click a box and press the new keys. You can also give `j1`–`j5` their own
+To see and change them, type `:keys` in the palette, click ⚙ in the palette,
+right-click the toolbar button → *ThunderJump settings*, or Add-ons Manager →
+ThunderJump → Options. Click a box and press the new keys. You can also give `j1`–`j5` their own
 keys there, to jump without opening the palette.
 
 When you jump, the folder pane on the left opens if it was hidden. The parent
@@ -164,6 +196,8 @@ the options.
 | `:keys` | Change keyboard shortcuts and settings |
 | `:backup` | Export / import settings, automatic backup |
 | `:move` | Move the selected messages (when moving is on) |
+| `move inv` | Move the selected messages, searching `inv` as the target |
+| `{YYYY}` … | Date patterns in new folder names (see above) |
 | `:undo` | Undo the last move |
 | `:manage` | Open the ThunderJump Manager |
 | `?` | Help |
@@ -181,6 +215,7 @@ duplicates.
 | `Alt+1` … `Alt+9` | Jump straight to shortcut 1 … 9 |
 | `↑ ↓`, `Tab`, `Ctrl+J/K` | Move the selection |
 | `Esc` | Leave create mode, or close |
+| `Backspace` (empty input) | Leave create or move mode |
 | `Delete` (or the × on hover) | Remove the highlighted item from Shortcuts, Recent or Recently moved to |
 
 After creating a folder it jumps there (you can turn that off in the options).
@@ -191,7 +226,7 @@ The options page also lists and deletes shortcuts.
 - `accountsRead`: list accounts and folders, show the current folder
 - `accountsFolders`: create folders (only when you ask)
 - `storage`: keep your shortcuts and recent folders
-- `menus`: the right-click *Move with ThunderJump* items
+- `menus`: the right-click items on messages and folders
 - `downloads` (optional, asked only if you turn on automatic backup): save
   the backup file to your Downloads folder
 - `messagesRead`, `messagesMove` (optional, asked only if you turn on moving):

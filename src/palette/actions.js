@@ -48,6 +48,17 @@ export async function runAction(action, state, { newTab = false } = {}) {
       return { close: false, reload: true, folderId, message: `Created ${where}` };
     }
 
+    // Move mode, "parent > New": create the folder, then move into it.
+    case "create-move": {
+      const parent = state.byId.get(action.parentId);
+      if (!parent) throw new Error("Parent folder not found");
+      const folderId = await createFolderPath(parent, action.segments);
+      const labels = Object.fromEntries(state.folders.map((f) => [f.id, pathLabel(f)]));
+      labels[folderId] = `${pathLabel(parent)} › ${action.segments.join(" › ")}`;
+      await moveMessages(state.moving, folderId, { labels });
+      return { close: true };
+    }
+
     case "move": {
       if (state.settings.confirmMove && !action.confirmed) return { close: false, confirm: action.folderId };
       const labels = Object.fromEntries(state.folders.map((f) => [f.id, pathLabel(f)]));

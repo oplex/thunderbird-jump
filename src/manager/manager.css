@@ -80,6 +80,7 @@ ul.folders .path { color: var(--dim); font-size: 12px; overflow: hidden; text-ov
 #pickerInput { width: 100%; border: 0; border-bottom: 1px solid var(--line); padding: 12px 14px; font-size: 17px; background: var(--panel); color: var(--fg); outline: 0; }
 #pickerList { list-style: none; margin: 0; padding: 6px; max-height: 50vh; overflow-y: auto; }
 #pickerList li { padding: 6px 10px; border-radius: 7px; cursor: pointer; }
+#pickerList li.off { opacity: .45; cursor: not-allowed; }
 #pickerList li.on { background: var(--accent); color: var(--accent-fg); }
 #pickerList li.on .path { color: var(--accent-fg); opacity: .85; }
 #pickerList .path { font-size: 12px; color: var(--dim); }

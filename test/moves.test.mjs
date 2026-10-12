@@ -53,6 +53,20 @@ test("move mode lists target folders, never the source or account roots", async 
   assert.ok(rows.some((r) => r.entry.name === "Clients"));
 });
 
+test("account roots and the source folder show grayed out with a reason", async () => {
+  mail.select([mail.add(fake.ids.inbox, "Invoice")]);
+  const state = await moveState();
+  const rows = buildRows("work", state);
+  const root = rows.find((r) => r.entry?.isRoot);
+  assert.ok(root, "root is listed");
+  assert.equal(root.disabled, true);
+  assert.equal(root.action, undefined);
+  assert.match(root.detail, /Account root/);
+  const inbox = buildRows("inbox", state).find((r) => r.entry?.id === fake.ids.inbox);
+  assert.equal(inbox.disabled, true);
+  assert.match(inbox.detail, /already in this folder/);
+});
+
 test("move, then undo puts every message back (ids change on move)", async () => {
   const ids = ["One", "Two", "Three"].map((s) => mail.add(fake.ids.inbox, s));
   mail.select(ids);
@@ -138,4 +152,17 @@ test("recently-moved-to targets can be removed and cleared", async () => {
   assert.deepEqual(home[1].remove, { list: "moveTarget", key: fake.ids.clients });
   await runAction({ op: "remove", ...home[1].remove }, state);
   assert.deepEqual(await msgs.getMoveTargets(), []);
+});
+
+test("move mode: parent > New creates the folder and moves there", async () => {
+  const id = mail.add(fake.ids.inbox, "Report");
+  mail.select([id]);
+  const state = await moveState();
+  const rows = buildRows("work > Archive/{YYYY}", state).filter((r) => r.action);
+  assert.equal(rows[0].action.op, "create-move");
+  assert.deepEqual(rows[0].action.segments, ["Archive", String(new Date().getFullYear())]);
+  await runAction(rows[0].action, state);
+  const created = (await loadFolders()).find((f) => f.name === String(new Date().getFullYear()));
+  assert.ok(created);
+  assert.deepEqual(mail.inFolder(created.id), ["Report"]);
 });

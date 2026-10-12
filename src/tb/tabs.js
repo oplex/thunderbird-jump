@@ -121,11 +121,14 @@ export async function jumpToFolder(folderId, windowId, { newTab = false, revealP
 }
 
 // Open the ThunderJump Manager in a tab (or switch to it if already open).
-export async function openManager() {
-  const url = browser.runtime.getURL("src/manager/manager.html");
-  const [open] = await browser.tabs.query({ url }).catch(() => []);
+// `params`: e.g. { folder: id } to open it searching inside one folder.
+export async function openManager(params = {}) {
+  const base = browser.runtime.getURL("src/manager/manager.html");
+  const query = new URLSearchParams(params).toString();
+  const url = query ? `${base}?${query}` : base;
+  const [open] = await browser.tabs.query({ url: `${base}*` }).catch(() => []);
   if (open) {
-    await browser.tabs.update(open.id, { active: true });
+    await browser.tabs.update(open.id, query ? { active: true, url } : { active: true });
     await browser.windows.update(open.windowId, { focused: true }).catch(() => {});
     return;
   }

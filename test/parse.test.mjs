@@ -72,3 +72,14 @@ test("shortcut matching order and numeric sort", () => {
   assert.deepEqual(matchShortcuts(s, "").map((x) => x.key), ["2", "10", "homework", "work", "workshop"]);
   assert.ok(compareShortcutKeys("9", "10") < 0);
 });
+
+test("move name: move the selection, searching name as the target", async () => {
+  const { parseInput } = await import("../src/lib/parse.js");
+  const { typedMoveQuery } = await import("../src/palette/move-mode.js");
+  assert.deepEqual(parseInput("move inv"), { kind: "move-mode", query: "inv" });
+  assert.deepEqual(parseInput(":m acme/2026"), { kind: "move-mode", query: "acme/2026" });
+  assert.deepEqual(parseInput(":move"), { kind: "move-mode" });
+  assert.deepEqual(parseInput("move"), { kind: "search", query: "move" });
+  assert.equal(typedMoveQuery("  mv cl"), "cl");
+  assert.equal(typedMoveQuery("mover"), null);
+});

@@ -3,14 +3,17 @@
 
 import { rankFolders } from "../lib/fuzzy.js";
 import { parseInput, matchShortcuts } from "../lib/parse.js";
+import { whyNotTarget } from "../lib/move-rows.js";
 
 const $ = (id) => document.getElementById(id);
 
+// Searched folders that can't take messages (account roots, saved searches)
+// stay in the list grayed out with the reason, so it's clear why.
 function candidates(text, { folders, byId, shortcuts, moveTargets, exclude }) {
   const ok = (e) => e && !e.isRoot && !e.isVirtual && !exclude.has(e.id);
   const p = parseInput(text);
   if (p.kind === "jump-shortcut") {
-    return matchShortcuts(shortcuts, p.name).map((s) => byId.get(s.folderId)).filter(ok);
+    return matchShortcuts(shortcuts, p.name).map((s) => byId.get(s.folderId)).filter(Boolean);
   }
   if (p.kind === "home") {
     const seen = new Set();
@@ -21,7 +24,7 @@ function candidates(text, { folders, byId, shortcuts, moveTargets, exclude }) {
   }
   if (p.kind !== "search") return [];
   const rank = new Map(moveTargets.map((id, i) => [id, i]));
-  return rankFolders(folders.filter(ok), p.query, { boost: (e) => (rank.has(e.id) ? 60 - rank.get(e.id) * 4 : 0), limit: 40 }).map((r) => r.entry);
+  return rankFolders(folders.filter((e) => !exclude.has(e.id)), p.query, { boost: (e) => (rank.has(e.id) ? 60 - rank.get(e.id) * 4 : 0), limit: 40 }).map((r) => r.entry);
 }
 
 export function pickFolder(heading, ctx) {
@@ -33,19 +36,27 @@ export function pickFolder(heading, ctx) {
   input.value = "";
   let items = [];
   let index = 0;
+  const blocked = (e) => whyNotTarget(e) ?? (ctx.exclude.has(e.id) ? "The messages are already in this folder" : null);
+  const step = (delta) => {
+    for (let n = 0; n < items.length; n++) {
+      index = (index + delta + items.length) % items.length;
+      if (!blocked(items[index])) return;
+    }
+  };
 
   const draw = () => {
     list.replaceChildren(
       ...items.map((e, i) => {
         const li = document.createElement("li");
-        li.className = i === index ? "on" : "";
+        const reason = blocked(e);
+        li.className = [i === index && !reason ? "on" : "", reason ? "off" : ""].join(" ").trim();
         const name = document.createElement("div");
         name.textContent = e.name;
         const path = document.createElement("div");
         path.className = "path";
-        path.textContent = e.segments.join(" › ");
+        path.textContent = reason ?? e.segments.join(" › ");
         li.append(name, path);
-        li.addEventListener("click", () => finish(e.id));
+        if (!reason) li.addEventListener("click", () => finish(e.id));
         return li;
       }),
     );
@@ -53,7 +64,8 @@ export function pickFolder(heading, ctx) {
   };
   const update = () => {
     items = candidates(input.value, ctx);
-    index = 0;
+    index = -1;
+    step(1);
     draw();
   };
 
@@ -67,11 +79,11 @@ export function pickFolder(heading, ctx) {
   const onKey = (ev) => {
     if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
       ev.preventDefault();
-      if (items.length) index = (index + (ev.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+      step(ev.key === "ArrowDown" ? 1 : -1);
       draw();
     } else if (ev.key === "Enter") {
       ev.preventDefault();
-      if (items[index]) finish(items[index].id);
+      if (items[index] && !blocked(items[index])) finish(items[index].id);
     } else if (ev.key === "Escape") {
       ev.preventDefault();
       finish(null);

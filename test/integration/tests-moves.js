@@ -61,7 +61,7 @@ async function seed(entry, subjects) {
 
 
 // Select messages by subject in the mail tab (API on 115+, UI before).
-async function select(windowId, folderId, subjects) {
+export async function select(windowId, folderId, subjects) {
   const ids = (await listAll(await browser.messages.query(queryFolder(folderId)))).filter((m) => subjects.includes(m.subject)).map((m) => m.id);
   const tab = await findMailTab(windowId);
   if (browser.mailTabs.setSelectedMessages) return browser.mailTabs.setSelectedMessages(tabIdOf(tab), ids);

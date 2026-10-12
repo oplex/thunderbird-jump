@@ -66,7 +66,7 @@ function renderItem(li, row) {
 }
 
 export function isSelectable(row) {
-  return row.type === "item" && row.action != null;
+  return row.type === "item" && row.action != null && !row.disabled;
 }
 
 function smallButton(className, text, title, onClick) {
@@ -90,6 +90,11 @@ export function renderRows(list, rows, selected, onPick, extra = {}) {
       renderItem(li, row);
       if (row.remove && extra.onRemove) li.append(smallButton("remove", "×", "Remove from this list (Delete)", () => extra.onRemove(i)));
       li.setAttribute("role", "option");
+      if (row.disabled) {
+        li.classList.add("disabled");
+        li.setAttribute("aria-disabled", "true");
+        li.title = row.detail ?? "";
+      }
       if (i === selected) {
         li.classList.add("selected");
         li.setAttribute("aria-selected", "true");
