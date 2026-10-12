@@ -27,6 +27,10 @@ export async function setupMenus() {
   await create({ id: "tj-move-to", title: "Move to", contexts: CONTEXTS });
   await create({ id: "tj-undo", title: "Undo last ThunderJump move", contexts: CONTEXTS });
   await create({ id: "tj-manager", title: "ThunderJump Manager", contexts: ["tools_menu"] });
+  // Right-click on the toolbar button ("action" in MV3, "browser_action" in MV2).
+  const button = browser.runtime.getManifest().manifest_version >= 3 ? "action" : "browser_action";
+  await create({ id: "tj-manager-button", title: "ThunderJump Manager", contexts: [button] });
+  await create({ id: "tj-options-button", title: "ThunderJump settings", contexts: [button] });
 }
 
 // Shortcuts first (j1, j2 …), then recently used move targets.
@@ -92,7 +96,8 @@ export function registerMenuHandlers({ openSpotlight }) {
   browser.menus.onClicked.addListener(async (info) => {
     const id = String(info.menuItemId);
     if (id === "tj-move") return openSpotlight("move");
-    if (id === "tj-manager") return openManager();
+    if (id === "tj-manager" || id === "tj-manager-button") return openManager();
+    if (id === "tj-options-button") return browser.runtime.openOptionsPage();
     if (id === "tj-to-enable") return browser.runtime.openOptionsPage();
     if (id === "tj-undo") {
       const last = await lastUndoableMove();

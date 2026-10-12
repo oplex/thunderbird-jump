@@ -87,8 +87,9 @@ Thunderbird asks once for permission to read and move messages.
 
 ## ThunderJump Manager
 
-A full page for finding things: **Tools → ThunderJump Manager**, `:manage` in
-the palette, or a key you assign in the options.
+A full page for finding things. Open it with **`Alt+Shift+F`**, the
+**🔍 Manager** button at the top of the palette (toolbar button), right-click
+on the toolbar button, **Tools → ThunderJump Manager**, or `:manage`.
 
 - **Messages:** type to search by subject or sender (or everything, including
   the body), and filter by date (today, 7 or 30 days, this year, older),
@@ -99,7 +100,10 @@ the palette, or a key you assign in the options.
   here** limits the message search to that folder.
 - **Bulk move:** tick messages (Shift+click selects a range, **Select all**),
   press **Move to…** (or `m`), and pick the folder the same way as in the
-  palette. An **Undo** button appears after each move.
+  palette. Or **drag** them onto a folder under *Drop to move* (your
+  shortcuts and recent targets) or onto a folder facet; clicking a *Drop to
+  move* folder moves the selection too. An **Undo** button appears after
+  each move.
 - Keys: `/` jumps to the search box, `Esc` clears the selection, double-click
   opens a message.
 
@@ -130,6 +134,9 @@ backup…** button.
 | --- | --- |
 | `Ctrl+Shift+Space` | Spotlight: a palette centered over the mail window |
 | `Alt+Shift+J` | The same palette as a popup from the toolbar button |
+| `Alt+Shift+F` | ThunderJump Manager (search mail and folders) |
+| `Alt+Shift+M` | Move the selected messages (when moving is on) |
+| `Alt+Shift+Z` | Undo the last move |
 
 To change them, type `:keys` in the palette (or open the add-on's options).
 Click a box and press the new keys. You can also give `j1`–`j5` their own
@@ -231,6 +238,11 @@ src/options/      options page
 src/manager/      ThunderJump Manager (faceted search, bulk move)
 test/             unit tests and the real-Thunderbird integration harness
 ```
+
+### Publishing on addons.thunderbird.net
+
+See [PUBLISHING.md](PUBLISHING.md). Each release includes ready-made `-atn`
+files for it.
 
 ### Releasing
 

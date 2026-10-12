@@ -24,6 +24,7 @@ export function renderResults(tbody, messages, selected, byId, handlers) {
   for (const m of messages) {
     const tr = el("tr", `${selected.has(m.id) ? "sel" : ""}${m.read ? "" : " unread"}`);
     tr.dataset.id = m.id;
+    tr.draggable = true;
     const box = document.createElement("input");
     box.type = "checkbox";
     box.checked = selected.has(m.id);
@@ -48,10 +49,12 @@ export function renderResults(tbody, messages, selected, byId, handlers) {
 }
 
 // One facet list; `active` is a Set of keys currently used as chips.
-export function renderFacet(ul, items, active, onPick) {
+// `dropTargets`: items are folders that accept dragged messages.
+export function renderFacet(ul, items, active, onPick, { dropTargets = false } = {}) {
   ul.replaceChildren(
     ...items.map((f) => {
       const li = el("li", active.has(f.key) ? "on" : "");
+      if (dropTargets) li.dataset.folderId = f.key;
       li.title = f.title ?? f.label;
       li.append(el("span", "label", f.label), el("span", "count", String(f.count)));
       li.addEventListener("click", () => onPick(f.key, f.label));

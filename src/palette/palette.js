@@ -20,7 +20,7 @@ const selection = document.getElementById("selection");
 const hints = document.getElementById("hints");
 const HINTS = hints.textContent;
 const MOVE_HINTS = "↵ move · Alt+1‥9 move to shortcut · ⌃Z undo · Esc cancel";
-const PLACEHOLDER = "Jump to folder…  (j1, :j name, :jj name, query > new, ? help)";
+const PLACEHOLDER = "Jump to folder…   ? for help";
 
 const state = {
   folders: [],
@@ -221,6 +221,16 @@ function onKey(ev) {
   }
 }
 
+// Manager / settings buttons in the palette's top bar (with the current key).
+function wireTools() {
+  document.getElementById("openManager").addEventListener("click", () => guarded(async () => (await runAction({ op: "manager" }, state)).close && close()));
+  document.getElementById("openOptions").addEventListener("click", () => guarded(async () => (await runAction({ op: "options" }, state)).close && close()));
+  browser.commands.getAll().then((cmds) => {
+    const key = cmds.find((c) => c.name === "open-manager")?.shortcut;
+    document.getElementById("managerKey").textContent = key ? key.replace(/\+/g, "+") : "";
+  });
+}
+
 async function init() {
   document.body.classList.add(mode);
   input.focus();
@@ -234,6 +244,7 @@ async function init() {
     refresh();
   });
   input.addEventListener("keydown", onKey);
+  wireTools();
   if (params.get("action") === "move") await enterMove();
   if (mode === "window" && settings.closeOnBlur) {
     window.addEventListener("blur", () => {

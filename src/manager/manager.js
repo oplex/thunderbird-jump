@@ -1,15 +1,14 @@
 // ThunderJump Manager: faceted search over folders and messages, with bulk
 // move (+ undo). Searching only reads; moving needs moving to be turned on.
 
-import { loadFolders, pathLabel } from "../tb/folders.js";
+import { loadFolders } from "../tb/folders.js";
 import { jumpToFolder, resolveMailWindowId } from "../tb/tabs.js";
-import { getShortcuts } from "../tb/store.js";
-import { canMove, enableMoving, moveMessages, undoMove, getMoveTargets } from "../tb/messages.js";
 import { rankFolders } from "../lib/fuzzy.js";
 import { computeFacets, applyChips } from "../lib/facets.js";
 import { searchMessages, hasCriteria, openMessage } from "./search.js";
 import { renderResults, renderFacet, renderChips, renderAccounts, renderFolders } from "./render.js";
-import { pickFolder } from "./picker.js";
+import { createMover } from "./moving.js";
+import { makeDraggable, makeDropTarget } from "./dnd.js";
 
 const READ = { permissions: ["messagesRead"] };
 const LIMIT = 500;
@@ -70,7 +69,7 @@ function renderMessages() {
   const facets = computeFacets(state.shown, state.byId);
   const active = (facet) => new Set(facetChips.filter((c) => c.facet === facet).map((c) => c.key));
   $("facetBox").hidden = !state.results.length;
-  renderFacet($("facetFolder"), facets.folder, active("folder"), (key, label) => toggleChip("folder", key, label));
+  renderFacet($("facetFolder"), facets.folder, active("folder"), (key, label) => toggleChip("folder", key, label), { dropTargets: true });
   renderFacet($("facetSender"), facets.sender, active("sender"), (key, label) => toggleChip("sender", key, label));
   renderFacet($("facetYear"), facets.year, active("year"), (key, label) => toggleChip("year", key, label));
   renderChips($("chips"), state.chips, removeChip);
@@ -114,6 +113,7 @@ function toggleRow(id, shift) {
 }
 
 const jump = (folderId) => jumpToFolder(folderId, state.windowId);
+const mover = createMover({ state, toast: (...a) => toast(...a), refresh: () => schedule(0), render: () => renderMessages() });
 
 function toast(text, undo) {
   $("toastText").textContent = text;
@@ -127,28 +127,6 @@ function toast(text, undo) {
   };
   clearTimeout(toast.t);
   toast.t = setTimeout(() => ($("toast").hidden = true), 12000);
-}
-
-async function moveSelected() {
-  const messages = state.shown.filter((m) => state.selected.has(m.id));
-  if (!messages.length) return;
-  if (!(await canMove()) && !(await enableMoving().catch(() => false))) {
-    return toast("Moving is off (permission not given). Turn it on in ThunderJump's options.");
-  }
-  const sources = new Set(messages.map((m) => m.folderId));
-  const exclude = sources.size === 1 ? sources : new Set();
-  const [shortcuts, moveTargets] = await Promise.all([getShortcuts(), getMoveTargets()]);
-  const target = await pickFolder(`Move ${plural(messages.length, "message")}`, { folders: state.folders, byId: state.byId, shortcuts, moveTargets, exclude });
-  if (!target) return;
-  const labels = Object.fromEntries(state.folders.map((f) => [f.id, pathLabel(f)]));
-  try {
-    const entry = await moveMessages(messages, target, { labels });
-    state.selected.clear();
-    toast(`Moved ${plural(entry.count, "message")} to ${state.byId.get(target)?.name ?? "folder"}`, () => undoMove(entry.id));
-  } catch (e) {
-    toast(`Move failed: ${e?.message ?? e}`);
-  }
-  schedule(0);
 }
 
 function renderFolderTab() {
@@ -200,7 +178,9 @@ function wire() {
   };
   $("selectAll").addEventListener("click", selectAll);
   $("checkAll").addEventListener("click", (ev) => (ev.preventDefault(), selectAll()));
-  $("moveTo").addEventListener("click", moveSelected);
+  $("moveTo").addEventListener("click", mover.moveSelected);
+  makeDraggable($("rows"), mover.idsForDrag);
+  makeDropTarget($("filters"), mover.dropped);
   $("showInFolder").addEventListener("click", () => {
     const m = state.shown.find((x) => state.selected.has(x.id));
     if (m) jump(m.folderId);
@@ -213,7 +193,7 @@ function wire() {
       $("q").focus();
     } else if ((ev.key === "m" || ev.key === "M") && !typing && state.selected.size) {
       ev.preventDefault();
-      moveSelected();
+      mover.moveSelected();
     } else if (ev.key === "Escape" && state.selected.size) {
       state.selected.clear();
       renderMessages();
@@ -234,6 +214,7 @@ async function init() {
     schedule(0);
   });
   wire();
+  mover.renderTargets();
   const q = new URLSearchParams(location.search).get("q");
   if (q) $("q").value = state.filters.text = q;
   $("q").focus();

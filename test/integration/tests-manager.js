@@ -5,7 +5,7 @@
 import { openManager } from "../../src/tb/tabs.js";
 import { listAll } from "../../src/tb/messages.js";
 import { queryFolder } from "../../src/tb/compat.js";
-import { check, assert, waitFor, byPath } from "./util.js";
+import { check, assert, waitFor, byPath, openPalette, closed } from "./util.js";
 
 const subjectsIn = async (folderId) =>
   (await listAll(await browser.messages.query(queryFolder(folderId)))).map((m) => m.subject).sort();
@@ -25,10 +25,19 @@ function typeInto(view, id, text) {
 
 const rows = (view) => [...view.document.querySelectorAll("#rows tr")];
 
-export async function managerTests(root) {
+export async function managerTests(windowId, root) {
   const src = await byPath(`${root.name}/JumpTest/MoveSrc`);
   const dst = await byPath(`${root.name}/JumpTest/MoveDst`);
   let view;
+
+  await check("manager: the palette's Manager button shows its key (Alt+Shift+F) and opens it", async () => {
+    const p = await openPalette(windowId);
+    await waitFor(() => p.doc.getElementById("managerKey").textContent === "Alt+Shift+F", "key on the button");
+    p.doc.getElementById("openManager").click();
+    await closed(p);
+    const v = await waitFor(() => browser.extension.getViews().find((x) => x.location.pathname.endsWith("manager.html")), "manager page");
+    v.close();
+  });
 
   await check("manager: search finds messages, with folder and sender facets", async () => {
     view = await managerView();
@@ -77,7 +86,37 @@ export async function managerTests(root) {
     await waitFor(async () => (await subjectsIn(dst.id)).length === 2, "2 in MoveDst");
     view.document.getElementById("toastUndo").click();
     await waitFor(() => /Moved 2 messages back/.test(view.document.getElementById("toastText").textContent), "undo toast");
+    await waitFor(() => view.document.querySelector("#quickTargets li"), "drop targets refreshed");
     await waitFor(async () => (await subjectsIn(src.id)).length === 3, "all back in MoveSrc");
+  });
+
+  await check("manager: drag a message onto a “Drop to move” target, then undo", async () => {
+    typeInto(view, "q", "TJ move A");
+    await waitFor(() => rows(view).length === 1 && rows(view)[0].textContent.includes("TJ move A"), "A as the only result");
+    const target = await waitFor(() => view.document.querySelector(`#quickTargets li[data-folder-id="${CSS.escape(dst.id)}"]`), "MoveDst as drop target");
+    const dt = new view.DataTransfer();
+    const fire = (node, type) => node.dispatchEvent(new view.DragEvent(type, { bubbles: true, cancelable: true, dataTransfer: dt }));
+    fire(rows(view)[0], "dragstart");
+    fire(target, "dragover");
+    assert(target.classList.contains("drop"), "target not highlighted while dragging");
+    fire(target, "drop");
+    await waitFor(() => /Moved 1 message to MoveDst/.test(view.document.getElementById("toastText").textContent), "drop toast");
+    await waitFor(async () => (await subjectsIn(dst.id)).join() === "TJ move A", "A in MoveDst");
+    view.document.getElementById("toastUndo").click();
+    await waitFor(async () => (await subjectsIn(src.id)).length === 3, "A back in MoveSrc");
+  });
+
+  await check("manager: clicking a “Drop to move” target moves the selection", async () => {
+    typeInto(view, "q", "TJ move B");
+    await waitFor(() => rows(view).length === 1 && rows(view)[0].textContent.includes("TJ move B"), "B as the only result");
+    rows(view)[0].click();
+    await waitFor(() => view.document.getElementById("selCount").textContent === "1 selected", "selected");
+    view.document.querySelector(`#quickTargets li[data-folder-id="${CSS.escape(dst.id)}"]`).click();
+    await waitFor(async () => (await subjectsIn(dst.id)).join() === "TJ move B", "B in MoveDst").catch((e) => {
+      throw new Error(`${e.message}; toast: ${view.document.getElementById("toastText").textContent}; sel: ${view.document.getElementById("selCount").textContent}`);
+    });
+    view.document.getElementById("toastUndo").click();
+    await waitFor(async () => (await subjectsIn(src.id)).length === 3, "B back in MoveSrc");
     view.close();
   });
 }

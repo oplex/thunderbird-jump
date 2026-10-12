@@ -142,3 +142,20 @@ body.window #palette { max-height: none; }
 .sel-subject { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sel-meta { flex: none; color: var(--dim); }
 .sel-more { color: var(--dim); }
+
+.tool {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dim);
+  font: 12px system-ui, sans-serif;
+  cursor: pointer;
+}
+.tool:hover { background: var(--badge); color: var(--fg); }
+.tool kbd { font: 11px ui-monospace, Menlo, Consolas, monospace; opacity: .8; }
+.tool kbd:empty { display: none; }

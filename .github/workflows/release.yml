@@ -44,4 +44,6 @@ jobs:
             --notes "Install: download the .xpi for your Thunderbird below, then open Add-ons and Themes → ⚙ → Install Add-on From File…  Updates install automatically after that.
 
           - Thunderbird 140 or newer: thunderjump-${TAG#v}.xpi
-          - Thunderbird 91 – 139: thunderjump-${TAG#v}-tb91-139.xpi"
+          - Thunderbird 91 – 139: thunderjump-${TAG#v}-tb91-139.xpi
+
+          Files with -atn in the name are for uploading to addons.thunderbird.net (see PUBLISHING.md); you don't need them."

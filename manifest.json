@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ThunderJump",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "ThunderJump: Spotlight-style folder jumper for Thunderbird. Fuzzy search, j1/:j shortcuts, quick folder creation. Never moves or deletes mail.",
   "author": "oplex",
   "browser_specific_settings": {
@@ -68,6 +68,9 @@
       "description": "Undo the last move"
     },
     "open-manager": {
+      "suggested_key": {
+        "default": "Alt+Shift+F"
+      },
       "description": "Open ThunderJump Manager"
     },
     "jump-1": {

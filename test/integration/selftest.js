@@ -37,7 +37,7 @@ async function run() {
     await uiTests(windowId, root);
     await featureTests(windowId, root);
     await moveTests(windowId, root);
-    await managerTests(root);
+    await managerTests(windowId, root);
     await backupTests(root);
   }
   else await check("UI tests need the Local Folders account", () => Promise.reject(new Error("no root")));

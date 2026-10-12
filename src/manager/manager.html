@@ -44,6 +44,10 @@
         <h3>Accounts</h3>
         <div id="accounts"></div>
       </section>
+      <section id="quickBox" hidden>
+        <h3>Drop to move</h3>
+        <ul class="facet targets" id="quickTargets"></ul>
+      </section>
       <section id="facetBox" hidden>
         <h3>Folder</h3><ul class="facet" id="facetFolder"></ul>
         <h3>Sender</h3><ul class="facet" id="facetSender"></ul>
@@ -75,6 +79,7 @@
     </main>
   </div>
 
+  <div id="dragGhost" class="ghost" aria-hidden="true"></div>
   <div id="toast" class="toast" hidden><span id="toastText"></span><button id="toastUndo">Undo</button></div>
 
   <div id="picker" class="overlay" hidden>
