@@ -4,16 +4,13 @@ addons.thunderbird.net (ATN) is Thunderbird's official add-on site. Add-ons
 listed there show up when people search in Thunderbird's Add-ons Manager,
 and ATN delivers updates itself.
 
-Every GitHub release has two files made for ATN (their self-update URL is
-removed, because ATN handles updates):
-
-| File | For |
-| --- | --- |
-| `thunderjump-<version>-atn.xpi` | Thunderbird 140 and newer |
-| `thunderjump-<version>.91-atn-tb91-139.xpi` | Thunderbird 91 – 139 (own version number, `<version>.91`) |
-
-ATN gives each Thunderbird the newest version that fits it, so uploading both
-covers every supported version.
+Every GitHub release has one file made for ATN,
+`thunderjump-<version>-atn.xpi`. It works on Thunderbird 91 and every newer
+version (the Manifest V2 build without an upper version limit, tested on
+91–139 and on the latest release), and its self-update URL is removed because
+ATN handles updates. One file matters: ATN's listing page decides "compatible"
+from the newest version alone, so separate files for old and new Thunderbird
+would show one of them as incompatible.
 
 ## First time (about 20 minutes, then a review)
 
@@ -29,22 +26,20 @@ covers every supported version.
    license, and add screenshots.
 6. Submit. Listed add-ons get a human review, which can take from a few days
    to a few weeks. You get an email when it's approved.
-7. Then **Manage → Upload New Version** with
-   `thunderjump-<version>.91-atn-tb91-139.xpi` for Thunderbird 91–139.
 
 ## Every new release
 
 Automatic: after the GitHub release is published, the *Upload to
-addons.thunderbird.net* workflow uploads both `-atn` files to ATN as new
-versions, and they wait for ATN's review as usual. It needs the repository
+addons.thunderbird.net* workflow uploads the `-atn` file to ATN as a new
+version, and it waits for ATN's review as usual. It needs the repository
 secrets `JWTISSUER` and `JWTSECRET` (ATN → Developer Hub →
 [API keys](https://addons.thunderbird.net/en-US/developers/addon/api/key/)).
 
 To upload a release again by hand: Actions → *Upload to
 addons.thunderbird.net* → *Run workflow* → the version (e.g. `1.8.0`).
-Versions already on ATN are skipped. Without the secrets, download the two
-`-atn` files from the GitHub release and use **Manage → Upload New Version**
-on ATN, once for each file.
+Versions already on ATN are skipped. Without the secrets, download the
+`-atn` file from the GitHub release and use **Manage → Upload New Version**
+on ATN.
 
 ## Listing text
 

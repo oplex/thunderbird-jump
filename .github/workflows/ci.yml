@@ -44,3 +44,22 @@ jobs:
       - run: node test/integration/run.mjs
         env:
           TB_REQUIRE_IMAP: "1"
+
+  atn-build:
+    # The addons.thunderbird.net file is the Manifest V2 build for every
+    # Thunderbird from 91 on; this checks it on the newest release too.
+    name: ATN build on the latest release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Thunderbird runtime libraries and Dovecot (IMAP test server)
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-0 libdbus-glib-1-2 libasound2t64 libx11-xcb1 libxtst6 dovecot-imapd
+      - name: Download Thunderbird latest-release
+        run: echo "TB_BIN=$(sh scripts/fetch-thunderbird.sh latest-release)" >> "$GITHUB_ENV"
+      - run: node test/integration/run.mjs
+        env:
+          TB_MV2: "1"
+          TB_REQUIRE_IMAP: "1"

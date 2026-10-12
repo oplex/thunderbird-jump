@@ -74,7 +74,8 @@ const downloadDir = join(work, "downloads");
 mkdirSync(downloadDir);
 // Thunderbird 115–139 get the Manifest V2 build (see scripts/manifest-mv2.mjs).
 const tbVersion = execFileSync(bin, ["--version"], { encoding: "utf8" }).match(/(\d+)\./)?.[1];
-const legacy = Number(tbVersion) < 140;
+// TB_MV2=1 tests that build on 140+ too (it is the addons.thunderbird.net build).
+const legacy = Number(tbVersion) < 140 || !!process.env.TB_MV2;
 console.log(`Thunderbird ${tbVersion}: ${legacy ? "Manifest V2 (115) build" : "Manifest V3 build"}`);
 const addonId = buildTestXpi(root, join(work, "stage"), xpi, port, dovecot ? IMAP_ACCOUNT : null, downloadDir, legacy);
 const profile = join(work, "profile");

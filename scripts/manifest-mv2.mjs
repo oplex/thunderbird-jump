@@ -1,12 +1,14 @@
 // Derives the Manifest V2 manifest for the Thunderbird 91–139 build from
 // manifest.json (Manifest V3, Thunderbird 140+). Same add-on id and update
 // URL; updates.json sends each Thunderbird the build that fits it.
+// `anyVersion` drops the upper limit: the addons.thunderbird.net build is this
+// MV2 build for every Thunderbird from 91 on (MV2 keeps working on 140+).
 import { readFileSync, writeFileSync } from "node:fs";
 
 export const LEGACY_MIN = "91.0";
 export const LEGACY_MAX = "139.*";
 
-export function toMV2(manifest) {
+export function toMV2(manifest, { anyVersion = false } = {}) {
   const m = structuredClone(manifest);
   m.manifest_version = 2;
   m.browser_action = m.action;
@@ -22,14 +24,15 @@ export function toMV2(manifest) {
   }
   const gecko = m.browser_specific_settings.gecko;
   gecko.strict_min_version = LEGACY_MIN;
-  gecko.strict_max_version = LEGACY_MAX;
+  if (anyVersion) delete gecko.strict_max_version;
+  else gecko.strict_max_version = LEGACY_MAX;
   return m;
 }
 
-// CLI: node scripts/manifest-mv2.mjs <in> <out>
+// CLI: node scripts/manifest-mv2.mjs <in> <out> [any]
 if (process.argv[1]?.endsWith("manifest-mv2.mjs")) {
-  const [, , input = "manifest.json", output] = process.argv;
-  const json = JSON.stringify(toMV2(JSON.parse(readFileSync(input, "utf8"))), null, 2) + "\n";
+  const [, , input = "manifest.json", output, any] = process.argv;
+  const json = JSON.stringify(toMV2(JSON.parse(readFileSync(input, "utf8")), { anyVersion: any === "any" }), null, 2) + "\n";
   if (output) writeFileSync(output, json);
   else process.stdout.write(json);
 }

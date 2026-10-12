@@ -2,8 +2,8 @@
 # Package the add-on:
 #   dist/thunderjump-<v>.xpi                     Thunderbird 140+ (Manifest V3)
 #   dist/thunderjump-<v>-tb91-139.xpi            Thunderbird 91–139 (Manifest V2)
-#   dist/thunderjump-<v>-atn.xpi                 same as the first, for addons.thunderbird.net
-#   dist/thunderjump-<v>.91-atn-tb91-139.xpi     same as the second, for addons.thunderbird.net
+#   dist/thunderjump-<v>-atn.xpi                 Thunderbird 91 and newer, for addons.thunderbird.net
+#                                        (Manifest V2, no upper limit, no self-update URL)
 set -eu
 cd "$(dirname "$0")/.."
 root=$PWD
@@ -28,5 +28,4 @@ pack() {
 
 pack "cp manifest.json $stage/x/manifest.json" "dist/thunderjump-$version.xpi"
 pack "node scripts/manifest-mv2.mjs manifest.json $stage/x/manifest.json" "dist/thunderjump-$version-tb91-139.xpi"
-pack "node scripts/atn-manifest.mjs manifest.json $stage/x/manifest.json" "dist/thunderjump-$version-atn.xpi"
-pack "node scripts/manifest-mv2.mjs manifest.json $stage/mv2.json && node scripts/atn-manifest.mjs $stage/mv2.json $stage/x/manifest.json legacy" "dist/thunderjump-$version.91-atn-tb91-139.xpi"
+pack "node scripts/manifest-mv2.mjs manifest.json $stage/mv2.json any && node scripts/atn-manifest.mjs $stage/mv2.json $stage/x/manifest.json" "dist/thunderjump-$version-atn.xpi"

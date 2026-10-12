@@ -89,7 +89,7 @@ export function buildTestXpi(root, stage, xpi, port, imapAccount = null, downloa
   manifest.permissions.push("messagesImport");
   manifest.optional_permissions = manifest.optional_permissions.filter((p) => !manifest.permissions.includes(p));
   if (legacy) {
-    manifest = toMV2(manifest);
+    manifest = toMV2(manifest, { anyVersion: true });
     // The MV2 background page loads the add-on and then the self-test.
     writeFileSync(
       join(stage, "src/background/background.html"),
