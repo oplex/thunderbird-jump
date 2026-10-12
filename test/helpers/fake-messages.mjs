@@ -1,5 +1,5 @@
-// Adds messages to a fake browser from fake-browser.mjs: messages.move/query/
-// continueList, mailTabs.getSelectedMessages and permissions. Like real
+// Adds messages to a fake browser from fake-browser.mjs: messages.move/copy/
+// update/query/continueList, tags, mailTabs.getSelectedMessages and permissions. Like real
 // Thunderbird, a moved message gets a NEW id; lists come in pages of 2 so
 // continueList is exercised.
 
@@ -15,7 +15,7 @@ export function addMessages(fake, { granted = true } = {}) {
 
   const view = (id) => {
     const m = messages.get(id);
-    return { id, headerMessageId: m.headerMessageId, subject: m.subject, author: m.author, date: m.date, read: false, flagged: false, folder: { id: m.folderId, accountId: "account1", name: "" } };
+    return { id, headerMessageId: m.headerMessageId, subject: m.subject, author: m.author, date: m.date, read: false, flagged: false, tags: [...(m.tags ?? [])], folder: { id: m.folderId, accountId: "account1", name: "" } };
   };
   const page = (ids) => {
     const views = ids.map(view);
@@ -54,6 +54,18 @@ export function addMessages(fake, { granted = true } = {}) {
         messages.set(nextId++, { ...m, folderId }); // new id, like Thunderbird
       }
     },
+    copy: async (ids, folderId) => {
+      if (!perms.has("messagesMove")) throw new Error("Missing messagesMove permission");
+      for (const id of ids) messages.set(nextId++, { ...messages.get(id), folderId });
+    },
+    update: async (id, props) => {
+      if (!messages.has(id)) throw new Error(`No message ${id}`);
+      Object.assign(messages.get(id), props);
+    },
+    listTags: async () => [
+      { key: "$label1", tag: "Important", color: "#FF0000" },
+      { key: "$label4", tag: "To Do", color: "#3333FF" },
+    ],
     query: async (q) => {
       const ids = [...messages.keys()].filter((id) => {
         const m = messages.get(id);
@@ -65,14 +77,15 @@ export function addMessages(fake, { granted = true } = {}) {
   b.mailTabs.getSelectedMessages = async () => page(selection.filter((id) => messages.has(id)));
 
   return {
-    add(folderId, subject, headerMessageId = `<${subject.replace(/\W/g, "")}@test>`) {
+    add(folderId, subject, headerMessageId = `<${subject.replace(/\W/g, "")}@test>`, author = "Ann <ann@example.com>") {
       const id = nextId++;
-      messages.set(id, { headerMessageId, subject, author: "Ann <ann@example.com>", folderId, date: "2026-10-01T10:00:00Z" });
+      messages.set(id, { headerMessageId, subject, author, folderId, date: "2026-10-01T10:00:00Z", tags: [] });
       return id;
     },
     select(ids) {
       selection = ids;
     },
+    tagsOf: (subject) => [...messages.values()].find((m) => m.subject === subject)?.tags,
     folderOf: (subject) => [...messages.values()].find((m) => m.subject === subject)?.folderId,
     inFolder: (folderId) => [...messages.values()].filter((m) => m.folderId === folderId).map((m) => m.subject).sort(),
     perms,

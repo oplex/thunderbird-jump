@@ -1,15 +1,12 @@
-// Palette move mode: load the selected messages and show what is being moved.
+// Palette filing mode (move, copy or tag): load the selected messages, the
+// suggested folders or the tags, and show what is being filed.
 
-import { canMove, selectedMessages, getMoveTargets, lastUndoableMove } from "../tb/messages.js";
+import { canMove, canTag, selectedMessages, getMoveTargets, lastUndoableMove } from "../tb/messages.js";
+import { listTags } from "../tb/tags.js";
+import { getRules, getLearned } from "../tb/rules.js";
+import { suggestFolders } from "../lib/suggest.js";
 import { describeSelection } from "../lib/move-rows.js";
-import { MOVE_PREFIX } from "../lib/parse.js";
-
-// "move inv" → "inv" (the folder to search for); null without the prefix.
-export function typedMoveQuery(text) {
-  const t = text.trimStart();
-  const m = MOVE_PREFIX.exec(t);
-  return m ? t.slice(m[0].length) : null;
-}
+export { fileCommand } from "../lib/parse.js";
 
 export async function loadMoveState(state) {
   const [moveTargets, lastMove] = await Promise.all([getMoveTargets(), lastUndoableMove()]);
@@ -17,17 +14,28 @@ export async function loadMoveState(state) {
   state.lastMove = lastMove;
 }
 
-// Switch the palette to moving the messages selected in the mail tab.
-export async function startMove(state) {
+// Switch the palette to filing the messages selected in the mail tab.
+// op: "move", "copy" or "tag".
+export async function startMove(state, op = "move") {
   state.confirmTarget = null;
-  if (!(await canMove())) {
+  state.fileOp = op;
+  if (!(await (op === "tag" ? canTag() : canMove()))) {
     state.needsPermission = true;
     state.moving = [];
     return;
   }
   state.needsPermission = false;
   state.moving = await selectedMessages(state.windowId);
+  if (op === "tag") {
+    state.tags = await listTags();
+    return;
+  }
+  if (!state.settings?.suggestEnabled) return void (state.suggestions = []);
+  const [rules, learned] = await Promise.all([getRules(), getLearned()]);
+  state.suggestions = suggestFolders(state.moving, rules, learned, { exists: (id) => state.byId.has(id) });
 }
+
+const VERB = { move: "Moving", copy: "Copying", tag: "Tagging" };
 
 function line(className, text) {
   const div = document.createElement("div");
@@ -47,7 +55,7 @@ export function renderSelection(el, state) {
   el.hidden = false;
   el.replaceChildren();
   const n = state.moving.length;
-  el.append(line("sel-head", n ? `Moving ${describeSelection(state.moving, state.byId)}` : "No messages selected"));
+  el.append(line("sel-head", n ? `${VERB[state.fileOp] ?? "Moving"} ${describeSelection(state.moving, state.byId)}` : "No messages selected"));
   for (const m of state.moving.slice(0, 3)) {
     const row = line("sel-msg", "");
     row.append(line("sel-subject", m.subject), line("sel-meta", `${m.author.replace(/\s*<.*>$/, "")} · ${shortDate(m.date)}`));

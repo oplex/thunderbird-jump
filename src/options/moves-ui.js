@@ -1,7 +1,7 @@
 // Options page: turn moving on/off, confirm-each-move, and the move history
 // (the add-on's own log) with Undo buttons.
 
-import { canMove, enableMoving, getMoveLog, undoMove, MOVE_PERMISSIONS } from "../tb/messages.js";
+import { canMove, enableMoving, disableMoving, getMoveLog, undoMove } from "../tb/messages.js";
 import { getSettings, saveSettings } from "../tb/store.js";
 
 const $ = (id) => document.getElementById(id);
@@ -33,11 +33,13 @@ async function renderHistory() {
   }
   for (const e of log.slice(0, 30)) {
     const tr = document.createElement("tr");
-    const from = [...new Set(e.groups.map((g) => g.fromLabel.split(" › ").pop() || "?"))].join(", ");
-    const subjects = e.groups.flatMap((g) => g.items.map((i) => i.subject));
+    const tag = e.kind === "tag";
+    const from = tag ? "" : [...new Set(e.groups.map((g) => g.fromLabel.split(" › ").pop() || "?"))].join(", ");
+    const subjects = tag ? e.items.map((i) => i.subject) : e.groups.flatMap((g) => g.items.map((i) => i.subject));
     const what = cell(`${plural(e.count, "message")}: ${subjects.slice(0, 2).join(" · ")}${subjects.length > 2 ? " …" : ""}`);
     what.title = subjects.join("\n");
-    tr.append(cell(new Date(e.at).toLocaleString()), what, cell(`${from} → ${e.targetLabel.split(" › ").pop() || "?"}`));
+    const where = tag ? `${e.remove ? "untagged" : "tagged"} “${e.targetLabel}”` : `${from} → ${e.targetLabel.split(" › ").pop() || "?"}`;
+    tr.append(cell(new Date(e.at).toLocaleString()), what, cell(where));
     const actions = document.createElement("td");
     if (e.undone) actions.append(cell("undone", "dim").firstChild);
     else {
@@ -47,7 +49,7 @@ async function renderHistory() {
         b.disabled = true;
         try {
           const { restored, missing } = await undoMove(e.id);
-          say(`Moved ${plural(restored, "message")} back${missing ? ` · ${missing} not found` : ""}`);
+          say(`${tag ? "Restored the tags of" : "Moved"} ${plural(restored, "message")}${tag ? "" : " back"}${missing ? ` · ${missing} not found` : ""}`);
         } catch (err) {
           say(err?.message ?? String(err), "missing");
         }
@@ -74,7 +76,7 @@ export async function initMoves() {
       const granted = await enableMoving().catch(() => false);
       say(granted ? "Moving is on. Select messages and press Alt+Shift+M." : "Moving stays off (permission not given).", granted ? "ok" : "missing");
     } else {
-      await browser.permissions.remove(MOVE_PERMISSIONS);
+      await disableMoving();
       say("Moving is off. ThunderJump is read-only again.");
     }
     sync();

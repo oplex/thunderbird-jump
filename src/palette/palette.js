@@ -8,7 +8,8 @@ import { resolveMailWindowId, currentFolderId, jumpToFolder } from "../tb/tabs.j
 import { getShortcuts, getRecent, getSettings, getShortcut, pushRecent } from "../tb/store.js";
 import { renderRows, isSelectable } from "./render.js";
 import { runAction } from "./actions.js";
-import { loadMoveState, startMove, renderSelection, typedMoveQuery } from "./move-mode.js";
+import { loadMoveState, startMove, renderSelection, fileCommand } from "./move-mode.js";
+import { featureOn } from "../lib/rows.js";
 import { presetFromMenu } from "./presets.js";
 import { isLite, hideWindow, onWake, wireTools } from "./lite.js";
 
@@ -23,23 +24,11 @@ const MOVE_HINTS = "↵ move · Alt+1‥9 move to shortcut · ⌃Z undo · Esc c
 const PLACEHOLDER = "Jump to folder…   ? for help";
 
 const state = {
-  folders: [],
-  byId: new Map(),
-  shortcuts: {},
-  recent: [],
-  currentId: null,
-  createParentId: null,
-  windowId: null,
-  settings: {},
-  rows: [],
-  selected: -1,
-  busy: false,
-  // Moving messages (see move-mode.js / lib/move-rows.js).
-  moving: null,
-  needsPermission: false,
-  confirmTarget: null,
-  moveTargets: [],
-  lastMove: null,
+  folders: [], byId: new Map(), shortcuts: {}, recent: [], currentId: null, createParentId: null,
+  windowId: null, settings: {}, rows: [], selected: -1, busy: false,
+  // Filing messages (see move-mode.js / lib/move-rows.js): fileOp is move, copy or tag.
+  moving: null, fileOp: "move", needsPermission: false, confirmTarget: null, moveTargets: [], lastMove: null,
+  suggestions: [], tags: [],
   setTargetId: null, // folder for ":jj name" when opened from a folder's menu
 };
 
@@ -82,18 +71,19 @@ function draw() {
     { onRemove: (i) => editList({ op: "remove", ...state.rows[i].remove }, i), onClear: (l) => editList({ op: "clear", list: l }, 0) },
   );
   const parent = state.byId.get(state.createParentId);
-  const badge = parent ? `New in ${parent.name} ›` : state.moving ? "Move to ›" : "";
+  const badge = parent ? `New in ${parent.name} ›` : state.moving ? { move: "Move to ›", copy: "Copy to ›", tag: "Tag ›" }[state.fileOp] : "";
   modeBadge.hidden = !badge;
   modeBadge.textContent = badge;
   renderSelection(selection, state);
   hints.textContent = state.moving ? MOVE_HINTS : HINTS;
 }
 
-// Typed "move inv": keep what follows "move " as the folder search.
-async function enterMove() {
-  await startMove(state);
-  input.value = typedMoveQuery(input.value) ?? "";
-  input.placeholder = "Move to folder…  (type a name, j1, :j name)";
+// op: move, copy or tag. Typed "move inv": keep "inv" as the search.
+async function enterMove(op = "move") {
+  if (!featureOn(state, op)) return setStatus(`${op === "copy" ? "Copying" : "Tagging"} is off · turn it on in settings (⚙)`, "error");
+  await startMove(state, op);
+  input.value = fileCommand(input.value)?.query ?? "";
+  input.placeholder = op === "tag" ? "Tag with…  (type a tag name)" : `${op === "copy" ? "Copy" : "Move"} to folder…  (type a name, j1, :j name)`;
   refresh();
 }
 
@@ -158,7 +148,7 @@ function execute({ newTab = false } = {}) {
       state.confirmTarget = result.confirm;
       return refresh();
     }
-    if (result.enterMove) return enterMove();
+    if (result.enterMove) return enterMove(result.enterMove);
     if (result.reload) await reload();
     state.createParentId = null;
     input.value = "";
@@ -190,7 +180,8 @@ function quickJump(digit) {
       return;
     }
     if (state.moving?.length) {
-      const result = await runAction({ op: "move", folderId: s.folderId }, state);
+      if (state.fileOp === "tag") return;
+      const result = await runAction({ op: state.fileOp === "copy" ? "copy" : "move", folderId: s.folderId }, state);
       if (result.confirm != null) {
         state.confirmTarget = result.confirm;
         return refresh();
@@ -256,7 +247,7 @@ async function start() {
   const [settings, currentId] = await Promise.all([getSettings(), currentFolderId(state.windowId).catch(() => null), reload()]);
   state.settings = settings;
   state.currentId = currentId;
-  if (params.get("action") === "move") await enterMove();
+  if (["move", "copy", "tag"].includes(params.get("action"))) await enterMove(params.get("action"));
   presetFromMenu(params, state, input, setStatus);
   refresh();
 }
@@ -265,7 +256,7 @@ async function start() {
 // with the data already loaded, then refresh it.
 function wake(newParams) {
   params = newParams;
-  Object.assign(state, { moving: null, confirmTarget: null, createParentId: null, setTargetId: null, busy: false });
+  Object.assign(state, { moving: null, fileOp: "move", suggestions: [], confirmTarget: null, createParentId: null, setTargetId: null, busy: false });
   input.value = "";
   input.placeholder = PLACEHOLDER;
   setStatus();
@@ -280,7 +271,8 @@ async function init() {
   input.focus();
   input.addEventListener("input", () => {
     setStatus();
-    if (!state.moving && typedMoveQuery(input.value) != null) return guarded(enterMove);
+    const typed = !state.moving && fileCommand(input.value);
+    if (typed && featureOn(state, typed.op)) return guarded(() => enterMove(typed.op));
     refresh();
   });
   input.addEventListener("keydown", onKey);

@@ -32,12 +32,18 @@ export const HELP = [
   [":backup", "export, import or auto-backup your settings"],
   [":move", "move the selected messages (Alt+Shift+M)"],
   ["move name", "move the selected messages to a folder (also :m name)"],
+  ["copy name, tag name", "copy them, or tag them (when turned on in settings)"],
+  [":rule text = folder", "suggest that folder for mail whose sender/subject has text"],
   [":undo", "undo the last move (Ctrl+Z)"],
   [":s text", "search mail in the current folder (:sa text = all folders)"],
   [":manage", "open the ThunderJump Manager (search folders and mail)"],
 ];
 
 const label = (entry) => entry.segments.join(" › ");
+
+// Copy and tags are extras, off until turned on in the options.
+export const featureOn = (ctx, op) => op === "move" || !!ctx.settings?.[op === "copy" ? "copyEnabled" : "tagsEnabled"];
+const offRow = (what) => ({ type: "item", icon: "⚙", title: `${what} is off`, detail: "Turn it on in ThunderJump settings (Enter opens them)", action: { op: "options" } });
 
 function shortcutBadges(shortcuts) {
   const byFolder = new Map();
@@ -118,9 +124,23 @@ export function buildRows(input, ctx) {
     case "undo":
       return [undo ?? { type: "info", text: "Nothing to undo" }];
 
-    case "move-mode":
-      if (p.query) return [{ type: "item", icon: "➜", title: `Move the selected messages to “${p.query}”…`, detail: "pick the folder next", action: { op: "enter-move" } }];
-      return [{ type: "item", icon: "➜", title: "Move the selected messages…", detail: "pick a folder next (Alt+Shift+M does this directly)", action: { op: "enter-move" } }];
+    case "move-mode": {
+      const op = p.op ?? "move";
+      if (!featureOn(ctx, op)) return [offRow(op === "copy" ? "Copying messages" : "Tagging messages")];
+      const verb = { move: "Move", copy: "Copy", tag: "Tag" }[op];
+      const key = { move: "M", copy: "C", tag: "T" }[op];
+      if (p.query) return [{ type: "item", icon: "➜", title: `${verb} the selected messages ${op === "tag" ? "with" : "to"} “${p.query}”…`, detail: "pick it next", action: { op: "enter-move", fileOp: op } }];
+      return [{ type: "item", icon: "➜", title: `${verb} the selected messages…`, detail: `pick ${op === "tag" ? "a tag" : "a folder"} next (Alt+Shift+${key} does this directly)`, action: { op: "enter-move", fileOp: op } }];
+    }
+
+    case "rule": {
+      if (!ctx.settings?.suggestEnabled) return [offRow("Suggested folders and rules")];
+      if (!p.text) return [{ type: "info", text: "Type a rule: :rule acme = clients acme (sender or subject contains “acme” → suggest that folder)" }];
+      if (!p.query) return [{ type: "info", text: `Now add “= folder” to pick where mail containing “${p.text}” goes` }];
+      const ranked = searchFolders(ctx, p.query, (e) => !e.isRoot && !e.isVirtual);
+      if (!ranked.length) return [{ type: "info", text: `No folder matches “${p.query}”` }];
+      return rankedRows(ranked, (e) => ({ op: "rule", text: p.text, folderId: e.id }), badges).map((r) => ({ ...r, detail: `rule: “${p.text}” → ${label(r.entry)}` }));
+    }
 
     case "search-mail": {
       if (!p.query) return [{ type: "info", text: "Type what to look for: :s invoice (this folder) or :sa invoice (all folders)" }];

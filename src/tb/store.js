@@ -10,6 +10,10 @@ export const DEFAULT_SETTINGS = {
   confirmMove: false,
   recentLimit: 12,
   liteMode: true, // keep the spotlight window ready (minimized) between uses
+  // Extra filing features, off until turned on in the options:
+  copyEnabled: false, // copy messages (Alt+Shift+C, "copy name")
+  tagsEnabled: false, // tag messages (Alt+Shift+T, "tag name"), undoable
+  suggestEnabled: false, // suggested folders: learn from moves, plus :rule rules
 };
 
 async function get(key, fallback) {

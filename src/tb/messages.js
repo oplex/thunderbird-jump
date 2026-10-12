@@ -1,7 +1,7 @@
 /*
- * Moving messages, and undoing moves. Only used once the user has turned on
- * moving (optional "messagesRead" + "messagesMove" permissions); without it
- * ThunderJump never touches messages.
+ * Moving and copying messages, and undoing moves and tag changes. Only used
+ * once the user has turned on moving (optional message permissions, see
+ * filingPermissions); without it ThunderJump never touches messages.
  *
  * Thunderbird gives a message a new id when it moves, so a move is logged
  * with each message's Message-ID header; undo finds the messages again in
@@ -10,18 +10,35 @@
 
 import { folderIdOf, messageFolderArg, queryFolder, tabIdOf } from "./compat.js";
 import { findMailTab } from "./tabs.js";
+import { restoreTags } from "./tags.js";
+import { learnSenders } from "./rules.js";
 
 export const MOVE_PERMISSIONS = { permissions: ["messagesRead", "messagesMove"] };
 const LOG_LIMIT = 100;
 const RECENT_TARGETS = 12;
 
+// Thunderbird 125+ guards tags behind two more permissions (91–115 don't know
+// them). Worked out without awaiting, so requests stay in the user's click.
+const major = Number(/Thunderbird\/(\d+)/.exec(navigator.userAgent)?.[1] ?? 0);
+export const TAG_PERMISSIONS = { permissions: major >= 116 ? ["messagesRead", "messagesUpdate", "messagesTagsList"] : ["messagesRead"] };
+const ALL = { permissions: [...new Set([...MOVE_PERMISSIONS.permissions, ...TAG_PERMISSIONS.permissions])] };
+
 export function canMove() {
   return browser.permissions.contains(MOVE_PERMISSIONS);
 }
 
-// Must be called from a user action (click / key press in an add-on page).
+export function canTag() {
+  return browser.permissions.contains(TAG_PERMISSIONS);
+}
+
+// Moving, copying and tagging in one prompt. Must be called from a user
+// action (click / key press in an add-on page), before any await.
 export function enableMoving() {
-  return browser.permissions.request(MOVE_PERMISSIONS);
+  return browser.permissions.request(ALL);
+}
+
+export function disableMoving() {
+  return browser.permissions.remove(ALL);
 }
 
 // Collect every page of a MessageList (Thunderbird returns 100 at a time).
@@ -47,6 +64,7 @@ export function summarize(m) {
     folderId: m.folder ? folderIdOf(m.folder) : null,
     read: !!m.read,
     flagged: !!m.flagged,
+    tags: m.tags ?? [],
   };
 }
 
@@ -64,7 +82,9 @@ export async function getMoveLog() {
   return (await browser.storage.local.get("moveLog")).moveLog ?? [];
 }
 
-async function saveMoveLog(log) {
+export const newEntryId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+export async function saveMoveLog(log) {
   await browser.storage.local.set({ moveLog: log.slice(0, LOG_LIMIT) });
 }
 
@@ -98,7 +118,7 @@ export async function moveMessages(messages, targetId, { labels = {} } = {}) {
   }
   await browser.messages.move(moving.map((m) => m.id), messageFolderArg(targetId));
   const entry = {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    id: newEntryId(),
     at: Date.now(),
     target: targetId,
     targetLabel: labels[targetId] ?? "",
@@ -112,7 +132,17 @@ export async function moveMessages(messages, targetId, { labels = {} } = {}) {
   };
   await saveMoveLog([entry, ...(await getMoveLog())]);
   await pushMoveTarget(targetId);
+  await learnSenders(moving, targetId);
   return entry;
+}
+
+// Copy `messages` to `targetId` (not logged: undoing a copy would mean
+// deleting mail). Returns the number copied.
+export async function copyMessages(messages, targetId) {
+  if (!messages.length) throw new Error("No messages are selected");
+  await browser.messages.copy(messages.map((m) => m.id), messageFolderArg(targetId));
+  await pushMoveTarget(targetId);
+  return messages.length;
 }
 
 async function findInFolder(folderId, headerMessageId) {
@@ -127,6 +157,7 @@ export async function undoMove(entryId) {
   const entry = log.find((e) => e.id === entryId);
   if (!entry) throw new Error("That move is no longer in the history");
   if (entry.undone) throw new Error("That move was already undone");
+  if (entry.kind === "tag") return restoreTags(entry, log);
   let restored = 0;
   let missing = 0;
   const taken = new Set();

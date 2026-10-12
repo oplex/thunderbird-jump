@@ -5,7 +5,9 @@
 import { createFolderPath, pathLabel } from "../tb/folders.js";
 import { jumpToFolder } from "../tb/tabs.js";
 import { setShortcut, deleteShortcut, pushRecent } from "../tb/store.js";
-import { moveMessages, undoMove, enableMoving, removeMoveTarget, clearMoveTargets } from "../tb/messages.js";
+import { moveMessages, copyMessages, undoMove, enableMoving, removeMoveTarget, clearMoveTargets } from "../tb/messages.js";
+import { tagMessages } from "../tb/tags.js";
+import { addRule } from "../tb/rules.js";
 import { removeRecent, clearRecent } from "../tb/store.js";
 import { openManager } from "../tb/tabs.js";
 
@@ -55,8 +57,27 @@ export async function runAction(action, state, { newTab = false } = {}) {
       const folderId = await createFolderPath(parent, action.segments);
       const labels = Object.fromEntries(state.folders.map((f) => [f.id, pathLabel(f)]));
       labels[folderId] = `${pathLabel(parent)} › ${action.segments.join(" › ")}`;
-      await moveMessages(state.moving, folderId, { labels });
+      if (action.copy) await copyMessages(state.moving, folderId);
+      else await moveMessages(state.moving, folderId, { labels });
       return { close: true };
+    }
+
+    case "copy": {
+      if (state.settings.confirmMove && !action.confirmed) return { close: false, confirm: action.folderId };
+      await copyMessages(state.moving, action.folderId);
+      return { close: true };
+    }
+
+    case "tag": {
+      const entry = await tagMessages(state.moving, action.tag);
+      const what = `${entry.remove ? "Removed" : "Added"} “${action.tag.name}” ${entry.remove ? "from" : "to"} ${plural(entry.count, "message")}`;
+      return { close: true, message: what };
+    }
+
+    case "rule": {
+      const entry = state.byId.get(action.folderId);
+      await addRule(action.text, action.folderId, pathLabel(entry));
+      return { close: false, reload: true, message: `Rule saved: “${action.text}” → ${pathLabel(entry)}` };
     }
 
     case "move": {
@@ -67,19 +88,20 @@ export async function runAction(action, state, { newTab = false } = {}) {
     }
 
     case "undo": {
-      const { restored, missing } = await undoMove(action.entryId);
+      const { restored, missing, entry } = await undoMove(action.entryId);
       const note = missing ? ` · ${missing} could not be found (moved or deleted since)` : "";
-      return { close: false, reload: true, message: `Moved ${plural(restored, "message")} back${note}` };
+      const done = entry?.kind === "tag" ? `Restored the tags of ${plural(restored, "message")}` : `Moved ${plural(restored, "message")} back`;
+      return { close: false, reload: true, message: `${done}${note}` };
     }
 
     case "enable-move": {
       const granted = await enableMoving().catch(() => false);
       if (!granted) throw new Error("Moving stays off (permission not given)");
-      return { close: false, enterMove: true };
+      return { close: false, enterMove: state.fileOp ?? "move" };
     }
 
     case "enter-move":
-      return { close: false, enterMove: true };
+      return { close: false, enterMove: action.fileOp ?? "move" };
 
     case "manager": // optional q (search text) and folder (scope)
       await openManager(Object.fromEntries(["q", "folder"].filter((k) => action[k]).map((k) => [k, action[k]])));

@@ -73,15 +73,25 @@ test("shortcut matching order and numeric sort", () => {
   assert.ok(compareShortcutKeys("9", "10") < 0);
 });
 
-test("move name: move the selection, searching name as the target", async () => {
-  const { parseInput } = await import("../src/lib/parse.js");
-  const { typedMoveQuery } = await import("../src/palette/move-mode.js");
-  assert.deepEqual(parseInput("move inv"), { kind: "move-mode", query: "inv" });
-  assert.deepEqual(parseInput(":m acme/2026"), { kind: "move-mode", query: "acme/2026" });
-  assert.deepEqual(parseInput(":move"), { kind: "move-mode" });
+test("move/copy/tag name: file the selection, searching name", async () => {
+  const { fileCommand } = await import("../src/palette/move-mode.js");
+  assert.deepEqual(parseInput("move inv"), { kind: "move-mode", op: "move", query: "inv" });
+  assert.deepEqual(parseInput(":m acme/2026"), { kind: "move-mode", op: "move", query: "acme/2026" });
+  assert.deepEqual(parseInput(":move"), { kind: "move-mode", op: "move" });
+  assert.deepEqual(parseInput("copy arch"), { kind: "move-mode", op: "copy", query: "arch" });
+  assert.deepEqual(parseInput(":c arch"), { kind: "move-mode", op: "copy", query: "arch" });
+  assert.deepEqual(parseInput("tag imp"), { kind: "move-mode", op: "tag", query: "imp" });
+  assert.deepEqual(parseInput(":t"), { kind: "move-mode", op: "tag" });
   assert.deepEqual(parseInput("move"), { kind: "search", query: "move" });
-  assert.equal(typedMoveQuery("  mv cl"), "cl");
-  assert.equal(typedMoveQuery("mover"), null);
+  assert.deepEqual(parseInput("c inbox"), { kind: "search", query: "c inbox" });
+  assert.deepEqual(fileCommand("  mv cl"), { op: "move", query: "cl" });
+  assert.equal(fileCommand("mover"), null);
+});
+
+test(":rule text = folder", () => {
+  assert.deepEqual(parseInput(":rule acme.com = clients"), { kind: "rule", text: "acme.com", query: "clients" });
+  assert.deepEqual(parseInput(":rule acme"), { kind: "rule", text: "acme", query: null });
+  assert.deepEqual(parseInput(":rule"), { kind: "rule", text: "", query: null });
 });
 
 test(":s and :sa search mail", () => {

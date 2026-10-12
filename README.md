@@ -83,6 +83,17 @@ Thunderbird asks once for permission to read and move messages.
   moving the selected messages and searches `inv` as the target.
 - **Into a new folder:** while moving, `clients > Acme {YYYY}` creates the
   folder and moves the messages into it.
+- **Copy, tags and suggestions** (each off until you turn it on in the
+  options, under *Moving messages*):
+  - **Copy:** `Alt+Shift+C`, `copy inv` or right-click → *Copy with
+    ThunderJump…*. Copies can't be undone, since that would mean deleting mail.
+  - **Tags:** `Alt+Shift+T`, `tag imp` or right-click → *Tag with
+    ThunderJump…*. Enter adds the tag, or takes it off if every selected
+    message has it. `Ctrl+Z` undoes it.
+  - **Suggested folders:** while moving, a *Suggested* list comes first. It
+    combines your rules ("sender or subject contains `acme` → *Clients ›
+    Acme*"; add them in the options or with `:rule acme = clients acme`) and
+    where earlier mail from the same sender went.
 - Account roots, saved searches and the folder the messages are already in
   are shown grayed out with the reason; they can't be picked.
 - **Right-click style:** right-click the selected messages →

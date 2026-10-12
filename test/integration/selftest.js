@@ -14,6 +14,7 @@ import { welcomeTest, backupTests } from "./tests-backup.js";
 import { moveTests } from "./tests-moves.js";
 import { managerTests } from "./tests-manager.js";
 import { quickTests } from "./tests-quick.js";
+import { filingTests } from "./tests-filing.js";
 
 // The runner answers "yes" once it has stored the IMAP password.
 async function runnerReady() {
@@ -41,6 +42,7 @@ async function run() {
     await moveTests(windowId, root);
     await managerTests(windowId, root);
     await quickTests(windowId, root);
+    await filingTests(windowId, root);
     await backupTests(root);
   }
   else await check("UI tests need the Local Folders account", () => Promise.reject(new Error("no root")));

@@ -14,14 +14,25 @@
  *   :keys, :backup     open the options page (keys, backup, settings)
  *   :move, :m          move the selected messages (when moving is turned on)
  *   move name, :m name move the selected messages, searching "name" as target
+ *   copy name, :c name copy them instead;  tag name, :t name  tag them
+ *   :rule text = query suggest a folder for mail whose sender/subject has text
  *   :undo, :u          undo the last move
  *   :s text            search mail in the current folder (Manager)
  *   :sa text           search mail in all folders (Manager)
  *   ? or :help         help
  */
 
-// "move inv", "mv inv", ":m inv", ":move inv" → move, searching "inv".
-export const MOVE_PREFIX = /^(?::m|:move|move|mv)\s+(?=\S)/i;
+// "move inv", "mv inv", ":m inv" → move, searching "inv"; the same with
+// copy (cp, :c) and tag (:t). Single letters only with the colon.
+export const FILE_PREFIX = /^(?::(m|move|c|copy|t|tag)|(move|mv|copy|cp|tag))\s+(?=\S)/i;
+const FILE_OPS = { m: "move", move: "move", mv: "move", c: "copy", copy: "copy", cp: "copy", t: "tag", tag: "tag" };
+
+// { op, query } for "move inv" etc., or null.
+export function fileCommand(text) {
+  const t = String(text).trimStart();
+  const m = FILE_PREFIX.exec(t);
+  return m ? { op: FILE_OPS[(m[1] ?? m[2]).toLowerCase()], query: t.slice(m[0].length) } : null;
+}
 
 export function shortcutKey(name) {
   return String(name).trim().toLowerCase();
@@ -41,9 +52,15 @@ export function parseInput(raw) {
   if (!t) return { kind: "home" };
   if (t === "?" || /^:h(elp)?$/i.test(t)) return { kind: "help" };
   if (/^:(keys|options|settings|backup|export|import)$/i.test(t)) return { kind: "options" };
-  if (/^:(move|m)$/i.test(t)) return { kind: "move-mode" };
-  const mv = MOVE_PREFIX.exec(t);
-  if (mv) return { kind: "move-mode", query: t.slice(mv[0].length) };
+  const alone = /^:(move|m|copy|c|tag|t)$/i.exec(t);
+  if (alone) return { kind: "move-mode", op: FILE_OPS[alone[1].toLowerCase()] };
+  const file = fileCommand(t);
+  if (file) return { kind: "move-mode", ...file };
+  const rule = /^:rule(?:\s+(.*))?$/i.exec(t);
+  if (rule) {
+    const [text, query = null] = (rule[1] ?? "").split("=").map((x) => x.trim());
+    return { kind: "rule", text, query };
+  }
   if (/^:(undo|u)$/i.test(t)) return { kind: "undo" };
   if (/^:(manage|manager|search|find)$/i.test(t)) return { kind: "manager" };
 

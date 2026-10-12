@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ThunderJump",
-  "version": "1.8.1",
+  "version": "1.9.0",
   "description": "Spotlight-style folder jumper: press a key, type a few letters, Enter. Shortcuts, quick folder creation, optional message moving with undo, and a Manager page with faceted search.",
   "author": "oplex.se",
   "browser_specific_settings": {
@@ -28,7 +28,9 @@
   "optional_permissions": [
     "downloads",
     "messagesRead",
-    "messagesMove"
+    "messagesMove",
+    "messagesUpdate",
+    "messagesTagsList"
   ],
   "background": {
     "scripts": [
@@ -62,6 +64,18 @@
         "default": "Alt+Shift+M"
       },
       "description": "Move the selected messages (palette in move mode)"
+    },
+    "copy-selected": {
+      "suggested_key": {
+        "default": "Alt+Shift+C"
+      },
+      "description": "Copy the selected messages (when copying is turned on)"
+    },
+    "tag-selected": {
+      "suggested_key": {
+        "default": "Alt+Shift+T"
+      },
+      "description": "Tag the selected messages (when tagging is turned on)"
     },
     "undo-move": {
       "suggested_key": {

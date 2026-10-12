@@ -57,7 +57,7 @@
         <div class="table-scroll">
           <table class="compare">
             <thead>
-              <tr><th></th><th class="us">ThunderJump 1.8</th><th>Nostalgy++ 5.2.10</th><th>Quick Folder Move 3.3.0</th><th>QuickFolders 6.18.1</th></tr>
+              <tr><th></th><th class="us">ThunderJump 1.9</th><th>Nostalgy++ 5.2.10</th><th>Quick Folder Move 3.3.0</th><th>QuickFolders 6.18.1</th></tr>
             </thead>
             <tbody>
               <tr class="group"><th colspan="5">Basics</th></tr>
@@ -65,7 +65,7 @@
               <tr><th>License</th><td class="us">MIT (open source)</td><td>CC BY-ND 4.0</td><td>MPL 2.0 (open source)</td><td>CC BY-ND 4.0</td></tr>
               <tr><th>Thunderbird versions (current release on ATN)</th><td class="us"><span class="yes">91 → any newer</span><span class="note">two builds: 91–139 and 140+, no upper limit</span></td><td>128 – 157</td><td>128 – 158</td><td>140 – 159</td></tr>
               <tr><th>Experiment APIs (deep access to Thunderbird internals)</th><td class="us"><span class="yes">None</span><span class="note">official APIs only</span></td><td>4</td><td>1</td><td>4</td></tr>
-              <tr><th>Download size</th><td class="us">≈ 70 KB</td><td>511 KB</td><td>498 KB</td><td>1.3 MB</td></tr>
+              <tr><th>Download size</th><td class="us">≈ 110 KB</td><td>511 KB</td><td>498 KB</td><td>1.3 MB</td></tr>
               <tr><th>Last update</th><td class="us">12 Oct 2026</td><td>9 Sep 2026</td><td>23 Jun 2025</td><td>6 Oct 2026</td></tr>
 
               <tr class="group"><th colspan="5">Getting to folders</th></tr>
@@ -77,10 +77,10 @@
 
               <tr class="group"><th colspan="5">Filing messages</th></tr>
               <tr><th>Move by keyboard</th><td class="us"><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
-              <tr><th>Copy</th><td class="us no">not yet</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
-              <tr><th>Undo a move</th><td class="us"><span class="yes">✓</span> Ctrl+Z, move history</td><td class="no">not listed</td><td class="no">not listed</td><td class="no">not listed</td></tr>
-              <tr><th>Rules / suggested folders</th><td class="us no">–</td><td><span class="yes">✓</span> rules, learned suggestions</td><td class="no">–</td><td class="no">–</td></tr>
-              <tr><th>Tags</th><td class="us no">–</td><td class="no">–</td><td><span class="yes">✓</span></td><td class="no">–</td></tr>
+              <tr><th>Copy</th><td class="us"><span class="yes">✓</span> optional</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+              <tr><th>Undo</th><td class="us"><span class="yes">✓</span> moves and tags: Ctrl+Z, history</td><td class="no">not listed</td><td class="no">not listed</td><td class="no">not listed</td></tr>
+              <tr><th>Rules / suggested folders</th><td class="us"><span class="yes">✓</span> rules + learned from your moves (optional)</td><td><span class="yes">✓</span> rules, learned suggestions</td><td class="no">–</td><td class="no">–</td></tr>
+              <tr><th>Tags</th><td class="us"><span class="yes">✓</span> undoable (optional)</td><td class="no">–</td><td><span class="yes">✓</span></td><td class="no">–</td></tr>
 
               <tr class="group"><th colspan="5">Searching mail</th></tr>
               <tr><th>Search page</th><td class="us"><span class="yes">✓</span> facets (folder, sender, year), bulk move, drag and drop</td><td><span class="yes">✓</span> Search++ tab</td><td class="no">–</td><td class="no">–</td></tr>
@@ -103,7 +103,7 @@
           <div class="card"><h3>QuickFolders</h3><p>Its listing has a “Thunderbird 143 problems” note about a new version awaiting review and a false incompatibility warning after an update.</p></div>
           <div class="card"><h3>ThunderJump</h3><p>Uses only official MailExtension APIs, declares no upper version limit, and runs its test suite inside real Thunderbird builds, from 91 up to the newest release, on every change.</p></div>
         </div>
-        <p class="small" style="margin-top:20px">This is a trade-off, not a verdict: Experiment APIs are how Nostalgy++ offers rules and QuickFolders its tab bar, which official APIs can't do today.</p>
+        <p class="small" style="margin-top:20px">This is a trade-off, not a verdict: Experiment APIs are how QuickFolders draws its tab bar and Nostalgy++ hooks single keys into the mail window, which official APIs can't do today.</p>
       </div>
     </section>
 
@@ -111,8 +111,8 @@
       <div class="wrap">
         <h2>Which one should you use?</h2>
         <div class="grid">
-          <div class="card"><h3>ThunderJump</h3><p>You want a fast keyboard jumper with shortcuts, folder creation, undoable moves and a search page, that keeps working after Thunderbird updates.</p></div>
-          <div class="card"><h3>Nostalgy++</h3><p>You rely on rules and learned folder suggestions, or Nostalgy's classic key set.</p></div>
+          <div class="card"><h3>ThunderJump</h3><p>You want a fast keyboard jumper with shortcuts, folder creation, move/copy/tag with undo, suggestions and a search page, that keeps working after Thunderbird updates.</p></div>
+          <div class="card"><h3>Nostalgy++</h3><p>You want Nostalgy's classic key set, archiving, or its Search++ tab with message preview.</p></div>
           <div class="card"><h3>Quick Folder Move</h3><p>You mainly need move, copy and tag from one small popup.</p></div>
           <div class="card"><h3>QuickFolders</h3><p>You prefer a visible bar of favorite folders as tabs, with categories.</p></div>
         </div>

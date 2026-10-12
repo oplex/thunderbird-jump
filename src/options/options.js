@@ -4,6 +4,7 @@ import { compareShortcutKeys } from "../lib/parse.js";
 import { renderKeyboard } from "./keyboard.js";
 import { initBackup } from "./backup-ui.js";
 import { initMoves } from "./moves-ui.js";
+import { initRules } from "./rules-ui.js";
 import { openManager } from "../tb/tabs.js";
 
 const tbody = document.getElementById("shortcuts");
@@ -50,7 +51,7 @@ async function renderShortcuts() {
 
 async function initSettings() {
   const settings = await getSettings();
-  for (const id of ["jumpAfterCreate", "closeOnBlur", "revealFolderPane", "liteMode"]) {
+  for (const id of ["jumpAfterCreate", "closeOnBlur", "revealFolderPane", "liteMode", "copyEnabled", "tagsEnabled", "suggestEnabled"]) {
     const box = document.getElementById(id);
     box.checked = !!settings[id];
     box.addEventListener("change", () => saveSettings({ [id]: box.checked }));
@@ -66,11 +67,12 @@ renderShortcuts();
 initSettings();
 renderKeyboard();
 initMoves();
+initRules();
 // After an import, show the restored shortcuts, settings and keys.
 initBackup(() => {
   renderShortcuts();
   renderKeyboard();
   getSettings().then((s) => {
-    for (const id of ["jumpAfterCreate", "closeOnBlur", "revealFolderPane", "liteMode"]) document.getElementById(id).checked = !!s[id];
+    for (const id of ["jumpAfterCreate", "closeOnBlur", "revealFolderPane", "liteMode", "copyEnabled", "tagsEnabled", "suggestEnabled"]) document.getElementById(id).checked = !!s[id];
   });
 });

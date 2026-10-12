@@ -83,6 +83,8 @@ async function undoLastMove() {
 export function handleCommand(command) {
   if (command === "open-spotlight") return openSpotlight();
   if (command === "move-selected") return openSpotlight("move");
+  if (command === "copy-selected") return openSpotlight("copy");
+  if (command === "tag-selected") return openSpotlight("tag");
   if (command === "undo-move") return undoLastMove();
   if (command === "open-manager") return openManager();
   const m = /^jump-(\d+)$/.exec(command);

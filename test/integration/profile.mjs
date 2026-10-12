@@ -69,7 +69,7 @@ export function buildTestXpi(root, stage, xpi, port, imapAccount = null, downloa
   cpSync(join(root, "src"), join(stage, "src"), { recursive: true });
   cpSync(join(root, "icons"), join(stage, "icons"), { recursive: true });
   mkdirSync(join(stage, "test/integration"), { recursive: true });
-  for (const f of ["selftest.js", "util.js", "tests-local.js", "tests-ui.js", "tests-imap.js", "tests-features.js", "tests-backup.js", "pane-scripts.js", "tests-moves.js", "tests-manager.js", "tests-quick.js"]) {
+  for (const f of ["selftest.js", "util.js", "tests-local.js", "tests-ui.js", "tests-imap.js", "tests-features.js", "tests-backup.js", "pane-scripts.js", "tests-moves.js", "tests-manager.js", "tests-quick.js", "tests-filing.js"]) {
     cpSync(join(root, "test/integration", f), join(stage, "test/integration", f));
   }
   writeFileSync(
@@ -83,7 +83,7 @@ export function buildTestXpi(root, stage, xpi, port, imapAccount = null, downloa
   manifest.host_permissions = ["http://127.0.0.1/*"];
   // Granting message permissions at runtime needs a click on Thunderbird's
   // prompt; the test build declares them instead (same APIs afterwards).
-  manifest.permissions.push("messagesRead", "messagesMove");
+  manifest.permissions.push("messagesRead", "messagesMove", "messagesUpdate", "messagesTagsList");
   // Lets the tests add real messages to folders (Thunderbird 106+; older
   // versions ignore the unknown permission and the test uses another way).
   manifest.permissions.push("messagesImport");

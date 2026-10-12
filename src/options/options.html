@@ -44,11 +44,28 @@
   <label><input type="checkbox" id="enableMoving"> Allow ThunderJump to move messages
     (Thunderbird asks for permission to read and move messages)</label>
   <label><input type="checkbox" id="confirmMove"> Ask before each move</label>
+  <p class="dim">Extras, off until you turn them on (they use the same permission):</p>
+  <label><input type="checkbox" id="copyEnabled"> Copy messages: <kbd>Alt+Shift+C</kbd>, or type <code>copy name</code></label>
+  <label><input type="checkbox" id="tagsEnabled"> Tag messages: <kbd>Alt+Shift+T</kbd>, or type <code>tag name</code> (undoable)</label>
+  <label><input type="checkbox" id="suggestEnabled"> Suggest folders when moving: learn where each sender's mail goes, plus the rules below</label>
   <p id="moveStatus"></p>
   <table class="history">
     <thead><tr><th>When</th><th>Messages</th><th>From → to</th><th></th></tr></thead>
     <tbody id="moveHistory"></tbody>
   </table>
+
+  <h2>Rules</h2>
+  <p class="dim">With suggestions on, mail whose sender or subject contains the text gets the
+    folder suggested first when you move it. Add rules here or in the palette:
+    <code>:rule acme = clients acme</code>.</p>
+  <table>
+    <thead><tr><th>Sender or subject contains</th><th>Suggest</th><th></th></tr></thead>
+    <tbody id="rules"></tbody>
+  </table>
+  <p><input id="ruleText" type="text" placeholder="e.g. acme.com or Invoice">
+    <select id="ruleFolder"></select> <button id="addRule">Add rule</button></p>
+  <p><button id="forgetLearned">Forget learned suggestions</button> <span id="learnedCount" class="dim"></span></p>
+  <p id="ruleStatus"></p>
 
   <h2>Backup</h2>
   <p class="dim">Thunderbird deletes an add-on's settings when you remove it and doesn't

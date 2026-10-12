@@ -1,14 +1,19 @@
-// Palette rows for moving messages and undoing moves. Pure (no browser APIs).
+// Palette rows for filing messages (move, copy, tag) and undoing moves.
+// Pure (no browser APIs).
 //
 // ctx additions used here:
-//   moving        message summaries being moved (null when not moving)
+//   moving        message summaries being filed (null when not filing)
+//   fileOp        "move" (default), "copy" or "tag"
+//   suggestions   [{ folderId, reason }] from rules and earlier moves
+//   tags          Thunderbird's tags (tag mode)
 //   moveTargets   folder ids recently moved to, newest first
 //   confirmTarget folder id waiting for "yes" (confirm-each-move setting)
-//   lastMove      newest undoable move log entry (or null)
+//   lastMove      newest undoable log entry (or null)
 
 import { parseInput, matchShortcuts, shortcutKey } from "./parse.js";
 import { rankFolders } from "./fuzzy.js";
 import { expandSegments } from "./template.js";
+import { buildTagRows } from "./tag-rows.js";
 
 const UNDO_WINDOW_MS = 30 * 60 * 1000;
 const label = (e) => e.segments.join(" › ");
@@ -23,11 +28,13 @@ export function describeSelection(messages, byId) {
 
 export function undoRow(entry, now = Date.now()) {
   if (!entry || entry.undone || now - entry.at > UNDO_WINDOW_MS) return null;
+  const tag = entry.kind === "tag";
+  const what = tag ? `${entry.remove ? "untagged" : "tagged"} ${plural(entry.count, "message")} “${entry.targetLabel}”` : `moved ${plural(entry.count, "message")} to ${entry.targetLabel || "folder"}`;
   return {
     type: "item",
     icon: "↶",
-    title: `Undo: moved ${plural(entry.count, "message")} to ${entry.targetLabel || "folder"}`,
-    detail: "Ctrl+Z · moves them back where they were",
+    title: `Undo: ${what}`,
+    detail: tag ? "Ctrl+Z · puts their tags back as they were" : "Ctrl+Z · moves them back where they were",
     action: { op: "undo", entryId: entry.id },
   };
 }
@@ -47,27 +54,29 @@ function blockedRow(entry, reason, extra = {}) {
 }
 
 function targetRow(entry, ctx, extra = {}) {
-  return { type: "item", entry, action: { op: "move", folderId: entry.id }, ...extra };
+  return { type: "item", entry, action: { op: ctx.fileOp === "copy" ? "copy" : "move", folderId: entry.id }, ...extra };
 }
 
 export function buildMoveRows(input, ctx) {
   const { moving, byId } = ctx;
+  const verb = ctx.fileOp === "copy" ? "Copy" : "Move";
   if (ctx.confirmTarget != null) {
     const target = byId.get(ctx.confirmTarget);
     return [
       {
         type: "item",
         icon: "✔",
-        title: `Move ${describeSelection(moving, byId)} to ${target?.name ?? "?"}?`,
-        detail: `${target ? label(target) : ""} · Enter = move, Esc = back`,
-        action: { op: "move", folderId: ctx.confirmTarget, confirmed: true },
+        title: `${verb} ${describeSelection(moving, byId)} to ${target?.name ?? "?"}?`,
+        detail: `${target ? label(target) : ""} · Enter = ${verb.toLowerCase()}, Esc = back`,
+        action: { op: verb.toLowerCase(), folderId: ctx.confirmTarget, confirmed: true },
       },
     ];
   }
   if (ctx.needsPermission) {
-    return [{ type: "item", icon: "🔓", title: "Turn on moving messages", detail: "Thunderbird asks once for permission to read and move messages", action: { op: "enable-move" } }];
+    return [{ type: "item", icon: "🔓", title: "Turn on moving, copying and tagging", detail: "Thunderbird asks once for permission to read, move and tag messages", action: { op: "enable-move" } }];
   }
   if (!moving.length) return [{ type: "info", text: "No messages are selected. Select some in the message list first." }];
+  if (ctx.fileOp === "tag") return buildTagRows(input, ctx);
 
   const p = parseInput(input);
   if (p.segments) p.segments = expandSegments(p.segments, ctx.now);
@@ -97,10 +106,15 @@ export function buildMoveRows(input, ctx) {
       }
     };
     const shortcutName = new Map(Object.values(ctx.shortcuts).map((s) => [s.folderId, s.name]));
+    for (const sug of (ctx.suggestions ?? []).filter((x) => byId.has(x.folderId) && allowed(byId.get(x.folderId)))) {
+      if (!seen.size) rows.push({ type: "header", text: "Suggested" });
+      seen.add(sug.folderId);
+      rows.push(targetRow(byId.get(sug.folderId), ctx, { detail: `${label(byId.get(sug.folderId))} · ${sug.reason}`, icon: "★" }));
+    }
     add("Recently moved to", ctx.moveTargets ?? [], "moveTarget");
     add("Shortcuts", Object.values(ctx.shortcuts).map((s) => s.folderId), "shortcut", (e) => shortcutName.get(e.id));
     add("Recent folders", ctx.recent, "recent");
-    if (!rows.length) rows.push({ type: "info", text: "Type a folder name to move the messages there" });
+    if (!rows.length) rows.push({ type: "info", text: `Type a folder name to ${verb.toLowerCase()} the messages there` });
     return rows;
   }
 
@@ -110,7 +124,8 @@ export function buildMoveRows(input, ctx) {
   const exact = ctx.shortcuts[shortcutKey(p.query)];
   if (exact && byId.has(exact.folderId)) rows.push(rowFor(byId.get(exact.folderId), { badge: exact.name }));
   const targetRank = new Map((ctx.moveTargets ?? []).map((id, i) => [id, i]));
-  const boost = (e) => (targetRank.has(e.id) ? Math.max(0, 60 - targetRank.get(e.id) * 4) : 0);
+  const suggested = new Set((ctx.suggestions ?? []).map((x) => x.folderId));
+  const boost = (e) => (suggested.has(e.id) ? 80 : 0) + (targetRank.has(e.id) ? Math.max(0, 60 - targetRank.get(e.id) * 4) : 0);
   for (const r of rankFolders(ctx.folders, p.query, { boost })) {
     if (exact && r.entry.id === exact.folderId) continue;
     rows.push(rowFor(r.entry, { positions: r.positions }));
@@ -133,8 +148,8 @@ function createAndMoveRows(p, ctx) {
     icon: "➕",
     entry: r.entry,
     positions: r.positions,
-    title: `New “${name}” in ${r.entry.name}, move there`,
+    title: `New “${name}” in ${r.entry.name}, ${ctx.fileOp === "copy" ? "copy" : "move"} there`,
     detail: label(r.entry),
-    action: { op: "create-move", parentId: r.entry.id, segments: p.segments },
+    action: { op: "create-move", parentId: r.entry.id, segments: p.segments, copy: ctx.fileOp === "copy" },
   }));
 }

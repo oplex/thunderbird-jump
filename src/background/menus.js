@@ -1,11 +1,12 @@
 // Right-click menu on the message list:
 //   Move with ThunderJump…   (opens the palette in move mode)
+//   Copy / Tag with ThunderJump…   (when turned on in the options)
 //   Move to ▸ <shortcuts and recent targets>   (one click)
 //   Undo last ThunderJump move
 // and Tools → ThunderJump Manager.
 
 import { canMove, listAll, summarize, moveMessages, undoMove, lastUndoableMove, getMoveTargets } from "../tb/messages.js";
-import { getShortcuts } from "../tb/store.js";
+import { getShortcuts, getSettings } from "../tb/store.js";
 import { loadFolders, pathLabel } from "../tb/folders.js";
 import { compareShortcutKeys } from "../lib/parse.js";
 import { openManager } from "../tb/tabs.js";
@@ -24,6 +25,8 @@ function create(props) {
 export async function setupMenus() {
   if (!browser.menus) return;
   await create({ id: "tj-move", title: "Move with ThunderJump…", contexts: CONTEXTS });
+  await create({ id: "tj-copy", title: "Copy with ThunderJump…", contexts: CONTEXTS, visible: false });
+  await create({ id: "tj-tag", title: "Tag with ThunderJump…", contexts: CONTEXTS, visible: false });
   await create({ id: "tj-move-to", title: "Move to", contexts: CONTEXTS });
   await create({ id: "tj-undo", title: "Undo last ThunderJump move", contexts: CONTEXTS });
   await create({ id: "tj-manager", title: "ThunderJump Manager", contexts: ["tools_menu"] });
@@ -90,12 +93,17 @@ export function registerMenuHandlers({ openSpotlight }) {
   if (!browser.menus) return;
   browser.menus.onShown.addListener(async (info) => {
     if (!info.menuIds?.includes("tj-move")) return;
+    const settings = await getSettings();
+    await browser.menus.update("tj-copy", { visible: settings.copyEnabled });
+    await browser.menus.update("tj-tag", { visible: settings.tagsEnabled });
     await refreshTargets();
     browser.menus.refresh();
   });
   browser.menus.onClicked.addListener(async (info) => {
     const id = String(info.menuItemId);
     if (id === "tj-move") return openSpotlight("move");
+    if (id === "tj-copy") return openSpotlight("copy");
+    if (id === "tj-tag") return openSpotlight("tag");
     if (id === "tj-manager" || id === "tj-manager-button") return openManager();
     if (id === "tj-options-button") return browser.runtime.openOptionsPage();
     if (id === "tj-to-enable") return browser.runtime.openOptionsPage();
