@@ -261,4 +261,4 @@ Either way `.github/workflows/release.yml` runs. It runs the whole CI suite
 
 ## License
 
-[MIT](LICENSE) © 2026 oplex
+[MIT](LICENSE) © 2026 oplex.se
