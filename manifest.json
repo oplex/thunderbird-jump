@@ -1,14 +1,14 @@
 {
   "manifest_version": 3,
   "name": "ThunderJump",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "description": "ThunderJump: Spotlight-style folder jumper for Thunderbird. Fuzzy search, j1/:j shortcuts, quick folder creation. Never moves or deletes mail.",
   "author": "oplex.se",
   "browser_specific_settings": {
     "gecko": {
       "id": "thunderbird-jump@oplex",
       "strict_min_version": "140.0",
-      "update_url": "https://github.com/oplex/thunderbird-jump/releases/latest/download/updates.json"
+      "update_url": "https://github.com/oplex/thunderjump/releases/latest/download/updates.json"
     }
   },
   "icons": {
@@ -89,5 +89,5 @@
       "description": "Jump to shortcut j5"
     }
   },
-  "homepage_url": "https://github.com/oplex/thunderbird-jump"
+  "homepage_url": "https://github.com/oplex/thunderjump"
 }

@@ -1,15 +1,17 @@
-// Differences between the Thunderbird versions this add-on supports.
-//
-//   Thunderbird 121+  folders have ids (MailFolder.id), accounts have rootFolder,
-//                     folders.get / mailTabs.create exist.
-//   Thunderbird 115   no folder ids: a folder is { accountId, path }; accounts
-//                     list top-level `folders`; APIs take folder objects.
-//   Manifest V3 (140 build)    MailTab.tabId, mailTabs.update({ displayedFolderId })
-//   Manifest V2 (91–139 build) MailTab.id,    mailTabs.update({ displayedFolder })
-//
-// The rest of the add-on works with plain string ids; on 115 they are made up
-// here as "<accountId>:<path>" (account root: "<accountId>:/").
-// (Thunderbird 91–114 behave like 115 here; 78 is not supported.)
+/*
+ * Differences between the Thunderbird versions this add-on supports.
+ *
+ *   Thunderbird 121+  folders have ids (MailFolder.id), accounts have rootFolder,
+ *                     folders.get / mailTabs.create exist.
+ *   Thunderbird 115   no folder ids: a folder is { accountId, path }; accounts
+ *                     list top-level `folders`; APIs take folder objects.
+ *   Manifest V3 (140 build)    MailTab.tabId, mailTabs.update({ displayedFolderId })
+ *   Manifest V2 (91–139 build) MailTab.id,    mailTabs.update({ displayedFolder })
+ *
+ * The rest of the add-on works with plain string ids; on 115 they are made up
+ * here as "<accountId>:<path>" (account root: "<accountId>:/").
+ * (Thunderbird 91–114 behave like 115 here; 78 is not supported.)
+ */
 
 export const hasFolderIds = () => typeof browser.folders?.get === "function";
 const isMV3 = () => browser.runtime.getManifest().manifest_version >= 3;

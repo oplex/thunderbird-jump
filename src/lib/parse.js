@@ -1,19 +1,21 @@
-// Parser for the palette's input line.
-//
-//   (empty)            home: shortcuts + recent folders
-//   text               fuzzy folder search
-//   j1, j2 ...         jump to numbered shortcut
-//   :j name            jump to shortcut "name" (":j" alone lists all)
-//   :jl                list shortcuts
-//   :jj1, :jj name     set shortcut to the current folder
-//   :jj name = query   set shortcut to a searched folder
-//   :jd name           delete shortcut
-//   :new A/B           create folder path A/B inside the current folder
-//   query > A/B        search a parent folder, create A/B inside it
-//   :keys, :backup     open the options page (keys, backup, settings)
-//   :move, :m          move the selected messages (when moving is turned on)
-//   :undo, :u          undo the last move
-//   ? or :help         help
+/*
+ * Parser for the palette's input line.
+ *
+ *   (empty)            home: shortcuts + recent folders
+ *   text               fuzzy folder search
+ *   j1, j2 ...         jump to numbered shortcut
+ *   :j name            jump to shortcut "name" (":j" alone lists all)
+ *   :jl                list shortcuts
+ *   :jj1, :jj name     set shortcut to the current folder
+ *   :jj name = query   set shortcut to a searched folder
+ *   :jd name           delete shortcut
+ *   :new A/B           create folder path A/B inside the current folder
+ *   query > A/B        search a parent folder, create A/B inside it
+ *   :keys, :backup     open the options page (keys, backup, settings)
+ *   :move, :m          move the selected messages (when moving is turned on)
+ *   :undo, :u          undo the last move
+ *   ? or :help         help
+ */
 
 export function shortcutKey(name) {
   return String(name).trim().toLowerCase();

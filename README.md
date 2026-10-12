@@ -23,7 +23,7 @@ undone.
 
 1. Check your version under **Help → About Thunderbird**.
 2. Download the matching file from the
-   [latest release](https://github.com/oplex/thunderbird-jump/releases/latest):
+   [latest release](https://github.com/oplex/thunderjump/releases/latest):
    - Thunderbird **140 or newer**: `thunderjump-<version>.xpi`
    - Thunderbird **91 – 139**: `thunderjump-<version>-tb91-139.xpi`
 3. In Thunderbird open **Add-ons and Themes** (Tools menu, or `Ctrl+Shift+A`).

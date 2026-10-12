@@ -1,10 +1,12 @@
-// Moving messages, and undoing moves. Only used once the user has turned on
-// moving (optional "messagesRead" + "messagesMove" permissions); without it
-// ThunderJump never touches messages.
-//
-// Thunderbird gives a message a new id when it moves, so a move is logged
-// with each message's Message-ID header; undo finds the messages again in
-// the destination folder by that header and moves them back.
+/*
+ * Moving messages, and undoing moves. Only used once the user has turned on
+ * moving (optional "messagesRead" + "messagesMove" permissions); without it
+ * ThunderJump never touches messages.
+ *
+ * Thunderbird gives a message a new id when it moves, so a move is logged
+ * with each message's Message-ID header; undo finds the messages again in
+ * the destination folder by that header and moves them back.
+ */
 
 import { folderIdOf, messageFolderArg, queryFolder, tabIdOf } from "./compat.js";
 import { findMailTab } from "./tabs.js";

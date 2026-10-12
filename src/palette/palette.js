@@ -1,10 +1,11 @@
-// Palette controller: loads state, wires keyboard handling, runs actions.
+/*
+ * Palette controller: loads state, wires keyboard handling, runs actions.
+ */
 
 import { buildRows } from "../lib/rows.js";
 import { loadFolders, pathLabel } from "../tb/folders.js";
-import { resolveMailWindowId, currentFolderId } from "../tb/tabs.js";
+import { resolveMailWindowId, currentFolderId, jumpToFolder } from "../tb/tabs.js";
 import { getShortcuts, getRecent, getSettings, getShortcut, pushRecent } from "../tb/store.js";
-import { jumpToFolder } from "../tb/tabs.js";
 import { renderRows, isSelectable } from "./render.js";
 import { runAction } from "./actions.js";
 import { loadMoveState, startMove, renderSelection } from "./move-mode.js";
@@ -12,12 +13,9 @@ import { loadMoveState, startMove, renderSelection } from "./move-mode.js";
 const params = new URLSearchParams(location.search);
 const mode = params.get("mode") === "window" ? "window" : "popup";
 
-const input = document.getElementById("input");
-const list = document.getElementById("list");
-const status = document.getElementById("status");
-const modeBadge = document.getElementById("mode");
-const selection = document.getElementById("selection");
-const hints = document.getElementById("hints");
+const [input, list, status, modeBadge, selection, hints] = ["input", "list", "status", "mode", "selection", "hints"].map((id) =>
+  document.getElementById(id),
+);
 const HINTS = hints.textContent;
 const MOVE_HINTS = "↵ move · Alt+1‥9 move to shortcut · ⌃Z undo · Esc cancel";
 const PLACEHOLDER = "Jump to folder…   ? for help";

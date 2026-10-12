@@ -21,7 +21,7 @@ covers every supported version.
    account.
 2. **Submit a New Add-on** → **On this site** (a listed add-on).
 3. Upload `thunderjump-<version>-atn.xpi` from the
-   [latest release](https://github.com/oplex/thunderbird-jump/releases/latest).
+   [latest release](https://github.com/oplex/thunderjump/releases/latest).
    The validator may warn about permissions; that is expected.
 4. Source code: answer **No**. The add-on is plain, unminified JavaScript with
    no build step, so reviewers can read the uploaded file directly.
@@ -73,9 +73,9 @@ covers every supported version.
 
 **Category:** Folders and Filters (or Message and News Reading)
 
-**Support site:** <https://github.com/oplex/thunderbird-jump/issues>
+**Support site:** <https://github.com/oplex/thunderjump/issues>
 
-**Homepage:** <https://github.com/oplex/thunderbird-jump>
+**Homepage:** <https://github.com/oplex/thunderjump>
 
 **Privacy policy** (ATN asks when an add-on can read mail):
 
