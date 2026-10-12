@@ -96,8 +96,9 @@ covers every supported version.
   undo moves
 - optional `downloads`: only for the opt-in automatic backup file
 
-**Screenshots:** the Manager, the palette, and the palette in move mode.
-ATN accepts PNG or JPG.
+**Icon and screenshots:** ready in [`listing/`](listing/) with captions.
+Upload them under **Edit Listing → Media** after submitting the first
+version.
 
 ## Notes
 
