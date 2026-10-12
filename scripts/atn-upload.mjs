@@ -43,10 +43,19 @@ async function upload(file) {
   const form = new FormData();
   form.append("upload", new Blob([readFileSync(file)]), basename(file));
   form.append("channel", "listed");
-  const res = await fetch(url, { method: "PUT", headers: { Authorization: `JWT ${token()}` }, body: form });
-  const text = await res.text();
+  // ATN's gateway sometimes answers 502/503/504: wait and try again.
+  let res;
+  let text;
+  for (let attempt = 1; ; attempt++) {
+    res = await fetch(url, { method: "PUT", headers: { Authorization: `JWT ${token()}` }, body: form }).catch((e) => ({ status: 0, text: async () => String(e) }));
+    text = await res.text();
+    if (![0, 502, 503, 504].includes(res.status) || attempt === 5) break;
+    console.log(`${basename(file)}: ATN answered ${res.status || "no connection"}, trying again (${attempt}/4)`);
+    await new Promise((r) => setTimeout(r, attempt * Number(process.env.ATN_RETRY_MS ?? 15000)));
+  }
   if (res.status === 409) return console.log(`${basename(file)}: ${manifest.version} is already on ATN, skipped`);
-  if (!res.ok) throw new Error(`${basename(file)}: ATN answered ${res.status}: ${text.slice(0, 500)}`);
+  const short = /<title>([^<]*)/.exec(text)?.[1] ?? text.slice(0, 500);
+  if (!res.ok) throw new Error(`${basename(file)}: ATN answered ${res.status}: ${short}`);
   const info = JSON.parse(text);
   console.log(`${basename(file)}: uploaded ${manifest.version} (${res.status}); validation: ${info.validation_url ?? "pending"}`);
 }
