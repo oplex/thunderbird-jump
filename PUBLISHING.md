@@ -104,8 +104,8 @@ ATN accepts PNG or JPG.
 - **Name:** Thunderbird's trademark rules don't allow "Thunderbird" in an
   add-on's name, which is one reason the add-on is called ThunderJump. The
   logo is original and doesn't use the Thunderbird bird.
-- **License:** ATN asks for one. The repository doesn't have a LICENSE file
-  yet; pick one (MPL-2.0, like Thunderbird itself, or MIT) and add it.
+- **License:** choose **MIT License** in the ATN form (see `LICENSE`; the
+  file is also included in every `.xpi`).
 - **GitHub vs ATN installs:** copies installed from GitHub keep updating from
   GitHub, and copies from ATN update from ATN. To switch, export your
   settings (`:backup`), remove the add-on, install it from ATN, and import

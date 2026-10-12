@@ -16,13 +16,13 @@ trap 'rm -rf "$stage"' EXIT
 # pack <manifest-producing command> <output>
 pack() {
   rm -rf "$stage/x" && mkdir "$stage/x"
-  cp -r icons src "$stage/x/"
+  cp -r icons src LICENSE "$stage/x/"
   eval "$1"
   # Only the MV2 build uses the background page.
   if node -e "process.exit(require('$stage/x/manifest.json').manifest_version >= 3 ? 0 : 1)"; then
     rm "$stage/x/src/background/background.html"
   fi
-  (cd "$stage/x" && zip -qr "$root/$2" manifest.json icons src)
+  (cd "$stage/x" && zip -qr "$root/$2" manifest.json icons src LICENSE)
   echo "$2"
 }
 

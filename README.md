@@ -258,3 +258,7 @@ Either way `.github/workflows/release.yml` runs. It runs the whole CI suite
 (including real Thunderbird + IMAP), then publishes a GitHub release with the
 `.xpi` and `updates.json`. Installed copies pick up the update through
 `update_url` in `manifest.json`.
+
+## License
+
+[MIT](LICENSE) © 2026 oplex

@@ -1,6 +1,6 @@
 {
   "name": "thunderjump",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "private": true,
   "type": "module",
   "description": "ThunderJump: Spotlight-style folder jumper for Thunderbird",
@@ -11,5 +11,6 @@
     "build": "sh scripts/build.sh",
     "release": "sh scripts/release.sh",
     "test:tb": "TB_BIN=${TB_BIN:-$(sh scripts/fetch-thunderbird.sh)} node test/integration/run.mjs"
-  }
+  },
+  "license": "MIT"
 }
