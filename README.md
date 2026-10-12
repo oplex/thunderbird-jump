@@ -38,7 +38,7 @@ Both files work on 32- and 64-bit Thunderbird, on Windows, macOS and Linux.
 ## Compatibility
 
 The full test suite (34 end-to-end checks in a real, headless Thunderbird,
-including an IMAP account) runs on every change for the versions marked CI,
+including an IMAP account) runs on every change for five key versions (below),
 and every week on **the newest release of every major version from 91 up**
 (`.github/workflows/compat.yml`), so new Thunderbird releases are tested as
 soon as they come out.
