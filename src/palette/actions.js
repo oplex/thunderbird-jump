@@ -81,8 +81,8 @@ export async function runAction(action, state, { newTab = false } = {}) {
     case "enter-move":
       return { close: false, enterMove: true };
 
-    case "manager":
-      await openManager();
+    case "manager": // optional q (search text) and folder (scope)
+      await openManager(Object.fromEntries(["q", "folder"].filter((k) => action[k]).map((k) => [k, action[k]])));
       return { close: true };
 
     // Remove one item from (or clear) the user's lists in the palette.

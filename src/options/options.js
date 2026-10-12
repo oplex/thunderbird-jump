@@ -50,7 +50,7 @@ async function renderShortcuts() {
 
 async function initSettings() {
   const settings = await getSettings();
-  for (const id of ["jumpAfterCreate", "closeOnBlur", "revealFolderPane"]) {
+  for (const id of ["jumpAfterCreate", "closeOnBlur", "revealFolderPane", "liteMode"]) {
     const box = document.getElementById(id);
     box.checked = !!settings[id];
     box.addEventListener("change", () => saveSettings({ [id]: box.checked }));
@@ -71,6 +71,6 @@ initBackup(() => {
   renderShortcuts();
   renderKeyboard();
   getSettings().then((s) => {
-    for (const id of ["jumpAfterCreate", "closeOnBlur", "revealFolderPane"]) document.getElementById(id).checked = !!s[id];
+    for (const id of ["jumpAfterCreate", "closeOnBlur", "revealFolderPane", "liteMode"]) document.getElementById(id).checked = !!s[id];
   });
 });

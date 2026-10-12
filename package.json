@@ -7,7 +7,7 @@
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "check-lines": "node scripts/check-lines.mjs",
-    "lint": "npx --yes web-ext@8.3.0 lint --self-hosted --ignore-files 'test/**' 'scripts/**' 'dist/**' 'package.json' 'README.md'",
+    "lint": "npx --yes web-ext@8.3.0 lint --self-hosted --ignore-files 'test/**' 'scripts/**' 'dist/**' 'package.json' 'README.md' 'DEVELOPMENT.md' 'PUBLISHING.md'",
     "build": "sh scripts/build.sh",
     "release": "sh scripts/release.sh",
     "test:tb": "TB_BIN=${TB_BIN:-$(sh scripts/fetch-thunderbird.sh)} node test/integration/run.mjs"

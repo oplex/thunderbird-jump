@@ -10,8 +10,9 @@ import { renderRows, isSelectable } from "./render.js";
 import { runAction } from "./actions.js";
 import { loadMoveState, startMove, renderSelection, typedMoveQuery } from "./move-mode.js";
 import { presetFromMenu } from "./presets.js";
+import { isLite, hideWindow, onWake, wireTools } from "./lite.js";
 
-const params = new URLSearchParams(location.search);
+let params = new URLSearchParams(location.search);
 const mode = params.get("mode") === "window" ? "window" : "popup";
 
 const [input, list, status, modeBadge, selection, hints] = ["input", "list", "status", "mode", "selection", "hints"].map((id) =>
@@ -48,6 +49,7 @@ function setStatus(text = "", kind = "") {
 }
 
 function close() {
+  if (isLite(mode, state.settings)) return void hideWindow().catch(() => {});
   window.close();
   // Thunderbird 115 ignores window.close() in a window the add-on opened
   // without allowScriptsToClose; close the spotlight window directly too.
@@ -247,39 +249,49 @@ function onKey(ev) {
   }
 }
 
-// Manager / settings buttons in the palette's top bar (with the current key).
-function wireTools() {
-  document.getElementById("openManager").addEventListener("click", () => guarded(async () => (await runAction({ op: "manager" }, state)).close && close()));
-  document.getElementById("openOptions").addEventListener("click", () => guarded(async () => (await runAction({ op: "options" }, state)).close && close()));
-  browser.commands.getAll().then((cmds) => {
-    const key = cmds.find((c) => c.name === "open-manager")?.shortcut;
-    document.getElementById("managerKey").textContent = key ? key.replace(/\+/g, "+") : "";
-  });
-}
-
-async function init() {
-  document.body.classList.add(mode);
-  input.focus();
+// Everything that depends on this open (window, folder, ?action=…).
+async function start() {
   const hint = Number.parseInt(params.get("win") ?? "", 10);
   state.windowId = await resolveMailWindowId(Number.isNaN(hint) ? undefined : hint);
   const [settings, currentId] = await Promise.all([getSettings(), currentFolderId(state.windowId).catch(() => null), reload()]);
   state.settings = settings;
   state.currentId = currentId;
+  if (params.get("action") === "move") await enterMove();
+  presetFromMenu(params, state, input, setStatus);
+  refresh();
+}
+
+// Lite mode: the kept window is opened again. Show the home list at once
+// with the data already loaded, then refresh it.
+function wake(newParams) {
+  params = newParams;
+  Object.assign(state, { moving: null, confirmTarget: null, createParentId: null, setTargetId: null, busy: false });
+  input.value = "";
+  input.placeholder = PLACEHOLDER;
+  setStatus();
+  refresh();
+  window.focus();
+  input.focus();
+  start().catch((e) => setStatus(e?.message ?? String(e), "error"));
+}
+
+async function init() {
+  document.body.classList.add(mode);
+  input.focus();
   input.addEventListener("input", () => {
     setStatus();
     if (!state.moving && typedMoveQuery(input.value) != null) return guarded(enterMove);
     refresh();
   });
   input.addEventListener("keydown", onKey);
-  wireTools();
-  if (params.get("action") === "move") await enterMove();
-  presetFromMenu(params, state, input, setStatus);
-  if (mode === "window" && settings.closeOnBlur) {
+  wireTools((op) => guarded(async () => (await runAction({ op }, state)).close && close()));
+  await start();
+  if (mode === "window") onWake(wake);
+  if (mode === "window" && state.settings.closeOnBlur) {
     window.addEventListener("blur", () => {
-      if (!state.busy) close();
+      if (!state.busy && !document.hidden) close();
     });
   }
-  refresh();
 }
 
 init().catch((e) => setStatus(e?.message ?? String(e), "error"));

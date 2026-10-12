@@ -51,7 +51,8 @@ export function eventToShortcut(ev, { isMac = false } = {}) {
   }
   const isFunctionKey = /^F\d+$/.test(key);
   if (!mods.length && !isFunctionKey) {
-    return { error: `Add ${isMac ? "Cmd, Ctrl or Option" : "Ctrl or Alt"} to the key` };
+    // Thunderbird only gives add-ons keys with a modifier, or F1–F19 alone.
+    return { error: `Add ${isMac ? "Cmd, Ctrl or Option" : "Ctrl or Alt"}, or use a function key (F1–F12) on its own` };
   }
   if (ev.shiftKey) mods.push("Shift");
   // Thunderbird's validator allows at most two modifiers.

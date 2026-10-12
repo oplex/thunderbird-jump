@@ -30,7 +30,8 @@ async function run() {
   await waitFor(async () => (await browser.mailTabs.query({})).length > 0, "a mail tab", 60000);
   await waitFor(runnerReady, "runner to be ready", 60000);
   const windowId = await resolveMailWindowId();
-  await saveSettings({ closeOnBlur: false, jumpAfterCreate: true });
+  // Lite mode is tested on its own (tests-quick.js); other tests expect Esc to close.
+  await saveSettings({ closeOnBlur: false, jumpAfterCreate: true, liteMode: false });
 
   await welcomeTest();
   const root = await localTests(windowId);

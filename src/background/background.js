@@ -36,12 +36,19 @@ async function spotlightWindowId() {
 export async function openSpotlight(action = "", extra = {}) {
   const existing = await spotlightWindowId();
   const query = new URLSearchParams({ mode: "window", ...(action ? { action } : {}), ...extra });
-  if (existing != null) {
-    if (!action && !Object.keys(extra).length) return browser.windows.update(existing, { focused: true });
-    await browser.windows.remove(existing).catch(() => {});
-  }
   const parentId = await resolveMailWindowId();
   query.set("win", parentId ?? "");
+  if (existing != null) {
+    // Lite mode keeps the window (minimized): reset it and show it again.
+    if ((await getSettings()).liteMode) {
+      await browser.runtime.sendMessage({ type: "palette-wake", params: query.toString() }).catch(() => {});
+      return browser.windows.update(existing, { state: "normal", focused: true });
+    }
+    // A window left minimized from lite mode (now off) is made fresh.
+    const kept = (await browser.windows.get(existing)).state === "minimized";
+    if (!kept && !action && !Object.keys(extra).length) return browser.windows.update(existing, { focused: true });
+    await browser.windows.remove(existing).catch(() => {});
+  }
   const parent = parentId == null ? null : await browser.windows.get(parentId);
   const geometry = { width: WIDTH, height: HEIGHT };
   if (parent?.width) {

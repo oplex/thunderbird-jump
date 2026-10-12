@@ -29,6 +29,8 @@
   <label><input type="checkbox" id="jumpAfterCreate"> Jump to a folder right after creating it</label>
   <label><input type="checkbox" id="closeOnBlur"> Close the spotlight window when it loses focus</label>
   <label><input type="checkbox" id="revealFolderPane"> Show the folder pane and scroll to the folder when jumping</label>
+  <label><input type="checkbox" id="liteMode"> Lite mode: open the spotlight instantly by keeping its window ready
+    (minimized in the taskbar between uses). Best on slower computers.</label>
   <p>
     <button id="clearRecent">Clear recent folders</button>
     <button id="openSpotlight">Open spotlight</button>
@@ -64,7 +66,9 @@
   <p class="dim">
     Click a box and press the new keys (for example <kbd>Ctrl+Alt+J</kbd>).
     <kbd>Backspace</kbd> clears it, <kbd>Esc</kbd> cancels. Give j1–j5 a key to jump
-    without opening the palette.
+    without opening the palette. Function keys work on their own (for example
+    <kbd>F2</kbd>); letters need <kbd>Ctrl</kbd> or <kbd>Alt</kbd>, because Thunderbird
+    doesn't let add-ons take plain letter keys in the mail window.
   </p>
   <table>
     <thead><tr><th>Action</th><th>Keys</th><th></th><th></th></tr></thead>

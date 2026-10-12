@@ -83,3 +83,10 @@ test("move name: move the selection, searching name as the target", async () => 
   assert.equal(typedMoveQuery("  mv cl"), "cl");
   assert.equal(typedMoveQuery("mover"), null);
 });
+
+test(":s and :sa search mail", () => {
+  assert.deepEqual(parseInput(":s invoice 2026"), { kind: "search-mail", query: "invoice 2026", all: false });
+  assert.deepEqual(parseInput(":sa acme"), { kind: "search-mail", query: "acme", all: true });
+  assert.deepEqual(parseInput(":s"), { kind: "search-mail", query: "", all: false });
+  assert.equal(parseInput(":settings").kind, "options");
+});

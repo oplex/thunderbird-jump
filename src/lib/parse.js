@@ -15,6 +15,8 @@
  *   :move, :m          move the selected messages (when moving is turned on)
  *   move name, :m name move the selected messages, searching "name" as target
  *   :undo, :u          undo the last move
+ *   :s text            search mail in the current folder (Manager)
+ *   :sa text           search mail in all folders (Manager)
  *   ? or :help         help
  */
 
@@ -44,6 +46,9 @@ export function parseInput(raw) {
   if (mv) return { kind: "move-mode", query: t.slice(mv[0].length) };
   if (/^:(undo|u)$/i.test(t)) return { kind: "undo" };
   if (/^:(manage|manager|search|find)$/i.test(t)) return { kind: "manager" };
+
+  const sm = /^:(sa?)(?:\s+(.*))?$/i.exec(t);
+  if (sm) return { kind: "search-mail", query: (sm[2] ?? "").trim(), all: sm[1].toLowerCase() === "sa" };
 
   let m = /^j(\d+)$/i.exec(t);
   if (m) return { kind: "jump-shortcut", name: m[1] };

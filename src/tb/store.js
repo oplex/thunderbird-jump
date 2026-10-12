@@ -9,6 +9,7 @@ export const DEFAULT_SETTINGS = {
   autoBackup: false,
   confirmMove: false,
   recentLimit: 12,
+  liteMode: true, // keep the spotlight window ready (minimized) between uses
 };
 
 async function get(key, fallback) {

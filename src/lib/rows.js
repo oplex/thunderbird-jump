@@ -33,6 +33,7 @@ export const HELP = [
   [":move", "move the selected messages (Alt+Shift+M)"],
   ["move name", "move the selected messages to a folder (also :m name)"],
   [":undo", "undo the last move (Ctrl+Z)"],
+  [":s text", "search mail in the current folder (:sa text = all folders)"],
   [":manage", "open the ThunderJump Manager (search folders and mail)"],
 ];
 
@@ -120,6 +121,14 @@ export function buildRows(input, ctx) {
     case "move-mode":
       if (p.query) return [{ type: "item", icon: "➜", title: `Move the selected messages to “${p.query}”…`, detail: "pick the folder next", action: { op: "enter-move" } }];
       return [{ type: "item", icon: "➜", title: "Move the selected messages…", detail: "pick a folder next (Alt+Shift+M does this directly)", action: { op: "enter-move" } }];
+
+    case "search-mail": {
+      if (!p.query) return [{ type: "info", text: "Type what to look for: :s invoice (this folder) or :sa invoice (all folders)" }];
+      const here = !p.all && current && !current.isRoot && !current.isVirtual ? current : null;
+      const rows = [{ type: "item", icon: "🔍", title: `Search mail for “${p.query}” in all folders`, detail: "opens ThunderJump Manager", action: { op: "manager", q: p.query } }];
+      if (here) rows.unshift({ type: "item", icon: "🔍", title: `Search mail for “${p.query}” in ${here.name}`, detail: `${label(here)} · opens ThunderJump Manager`, action: { op: "manager", q: p.query, folder: here.id } });
+      return rows;
+    }
 
     case "manager":
       return [{ type: "item", icon: "🔍", title: "Open ThunderJump Manager", detail: "search folders and mail with filters, move in bulk", action: { op: "manager" } }];
