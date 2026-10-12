@@ -17,6 +17,9 @@ const list = document.getElementById("list");
 const status = document.getElementById("status");
 const modeBadge = document.getElementById("mode");
 const selection = document.getElementById("selection");
+const hints = document.getElementById("hints");
+const HINTS = hints.textContent;
+const MOVE_HINTS = "↵ move · Alt+1‥9 move to shortcut · ⌃Z undo · Esc cancel";
 const PLACEHOLDER = "Jump to folder…  (j1, :j name, :jj name, query > new, ? help)";
 
 const state = {
@@ -75,6 +78,7 @@ function draw() {
   modeBadge.hidden = !badge;
   modeBadge.textContent = badge;
   renderSelection(selection, state);
+  hints.textContent = state.moving ? MOVE_HINTS : HINTS;
 }
 
 async function enterMove() {

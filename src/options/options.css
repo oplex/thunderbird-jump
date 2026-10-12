@@ -1,3 +1,5 @@
+/* Elements with their own display value must still hide when [hidden]. */
+[hidden] { display: none !important; }
 body {
   font: 14px/1.4 system-ui, sans-serif;
   margin: 16px;

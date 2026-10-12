@@ -2,11 +2,13 @@
 //   Move with ThunderJump…   (opens the palette in move mode)
 //   Move to ▸ <shortcuts and recent targets>   (one click)
 //   Undo last ThunderJump move
+// and Tools → ThunderJump Manager.
 
 import { canMove, listAll, summarize, moveMessages, undoMove, lastUndoableMove, getMoveTargets } from "../tb/messages.js";
 import { getShortcuts } from "../tb/store.js";
 import { loadFolders, pathLabel } from "../tb/folders.js";
 import { compareShortcutKeys } from "../lib/parse.js";
+import { openManager } from "../tb/tabs.js";
 
 const CONTEXTS = ["message_list"];
 const MAX_TARGETS = 10;
@@ -24,6 +26,7 @@ export async function setupMenus() {
   await create({ id: "tj-move", title: "Move with ThunderJump…", contexts: CONTEXTS });
   await create({ id: "tj-move-to", title: "Move to", contexts: CONTEXTS });
   await create({ id: "tj-undo", title: "Undo last ThunderJump move", contexts: CONTEXTS });
+  await create({ id: "tj-manager", title: "ThunderJump Manager", contexts: ["tools_menu"] });
 }
 
 // Shortcuts first (j1, j2 …), then recently used move targets.
@@ -89,6 +92,7 @@ export function registerMenuHandlers({ openSpotlight }) {
   browser.menus.onClicked.addListener(async (info) => {
     const id = String(info.menuItemId);
     if (id === "tj-move") return openSpotlight("move");
+    if (id === "tj-manager") return openManager();
     if (id === "tj-to-enable") return browser.runtime.openOptionsPage();
     if (id === "tj-undo") {
       const last = await lastUndoableMove();

@@ -4,6 +4,7 @@ import { compareShortcutKeys } from "../lib/parse.js";
 import { renderKeyboard } from "./keyboard.js";
 import { initBackup } from "./backup-ui.js";
 import { initMoves } from "./moves-ui.js";
+import { openManager } from "../tb/tabs.js";
 
 const tbody = document.getElementById("shortcuts");
 
@@ -55,6 +56,7 @@ async function initSettings() {
     box.addEventListener("change", () => saveSettings({ [id]: box.checked }));
   }
   document.getElementById("clearRecent").addEventListener("click", () => clearRecent());
+  document.getElementById("openManager").addEventListener("click", () => openManager());
   document.getElementById("openSpotlight").addEventListener("click", () =>
     browser.runtime.sendMessage({ type: "open-spotlight" }),
   );

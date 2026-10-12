@@ -69,7 +69,7 @@ export function buildTestXpi(root, stage, xpi, port, imapAccount = null, downloa
   cpSync(join(root, "src"), join(stage, "src"), { recursive: true });
   cpSync(join(root, "icons"), join(stage, "icons"), { recursive: true });
   mkdirSync(join(stage, "test/integration"), { recursive: true });
-  for (const f of ["selftest.js", "util.js", "tests-local.js", "tests-ui.js", "tests-imap.js", "tests-features.js", "tests-backup.js", "pane-scripts.js", "tests-moves.js"]) {
+  for (const f of ["selftest.js", "util.js", "tests-local.js", "tests-ui.js", "tests-imap.js", "tests-features.js", "tests-backup.js", "pane-scripts.js", "tests-moves.js", "tests-manager.js"]) {
     cpSync(join(root, "test/integration", f), join(stage, "test/integration", f));
   }
   writeFileSync(

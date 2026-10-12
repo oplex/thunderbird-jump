@@ -25,6 +25,8 @@
   }
 }
 
+/* Elements with their own display value must still hide when [hidden]. */
+[hidden] { display: none !important; }
 * { box-sizing: border-box; }
 
 html, body {

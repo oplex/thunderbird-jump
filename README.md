@@ -39,7 +39,7 @@ Both files work on 32- and 64-bit Thunderbird, on Windows, macOS and Linux.
 
 ## Compatibility
 
-The full test suite (34 end-to-end checks in a real, headless Thunderbird,
+The full test suite (43 end-to-end checks in a real, headless Thunderbird,
 including an IMAP account) runs on every change for five key versions (below),
 and every week on **the newest release of every major version from 91 up**
 (`.github/workflows/compat.yml`), so new Thunderbird releases are tested as
@@ -52,7 +52,7 @@ soon as they come out.
 | 78 and older | – | ❌ not supported (missing APIs the add-on needs) |
 
 Last full run: October 2026, the newest release of all 35 major versions from
-91.13.1 to 157.0.1 passed 34/34 (see the *Compatibility* workflow under
+91.13.1 to 157.0.1 passed all checks (see the *Compatibility* workflow under
 Actions). On every change, CI also runs 157 (latest release), 153 ESR
 (latest ESR), 140.7.1esr, 115.5.1 and 91.13.1.
 
@@ -84,6 +84,27 @@ Thunderbird asks once for permission to read and move messages.
   **`Alt+Shift+Z`** anywhere, right-click → *Undo last ThunderJump move*, or
   the move history in the options. Moves are logged in the add-on's own
   storage, and undo finds the messages again by their Message-ID.
+
+## ThunderJump Manager
+
+A full page for finding things: **Tools → ThunderJump Manager**, `:manage` in
+the palette, or a key you assign in the options.
+
+- **Messages:** type to search by subject or sender (or everything, including
+  the body), and filter by date (today, 7 or 30 days, this year, older),
+  unread, flagged, attachment and account.
+- **Facets:** after each search, counts by **folder**, **sender** and
+  **year**. Click one to narrow the results; it becomes a removable chip.
+- **Folders:** fuzzy-search every folder; **Open** jumps to it, **Messages
+  here** limits the message search to that folder.
+- **Bulk move:** tick messages (Shift+click selects a range, **Select all**),
+  press **Move to…** (or `m`), and pick the folder the same way as in the
+  palette. An **Undo** button appears after each move.
+- Keys: `/` jumps to the search box, `Esc` clears the selection, double-click
+  opens a message.
+
+Searching only reads your mail (Thunderbird asks once for permission to read
+messages). Moving uses the same opt-in, undoable moves as the palette.
 
 ## Backup and moving to another computer
 
@@ -137,6 +158,7 @@ the options.
 | `:backup` | Export / import settings, automatic backup |
 | `:move` | Move the selected messages (when moving is on) |
 | `:undo` | Undo the last move |
+| `:manage` | Open the ThunderJump Manager |
 | `?` | Help |
 
 Folders that already exist along a path are reused, so `> A/B` never makes
@@ -206,6 +228,7 @@ src/lib/          pure logic: fuzzy matching, input parser, row building
 src/tb/           Thunderbird API wrappers: folders, tabs, storage
 src/palette/      palette UI: controller, rendering, actions
 src/options/      options page
+src/manager/      ThunderJump Manager (faceted search, bulk move)
 test/             unit tests and the real-Thunderbird integration harness
 ```
 

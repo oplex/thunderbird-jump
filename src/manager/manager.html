@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ThunderJump Manager</title>
+  <link rel="stylesheet" href="manager.css">
+  <script type="module" src="manager.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><img src="../../icons/thunderjump.svg" alt="" width="28" height="28"><span>ThunderJump Manager</span></div>
+    <input id="q" type="search" placeholder="Search messages and folders…" autocomplete="off" spellcheck="false">
+    <nav class="tabs" role="tablist">
+      <button id="tabMessages" role="tab" aria-selected="true">Messages</button>
+      <button id="tabFolders" role="tab" aria-selected="false">Folders</button>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <aside class="filters" id="filters">
+      <section>
+        <h3>Match in</h3>
+        <select id="matchIn">
+          <option value="subjectFrom">Subject or sender</option>
+          <option value="subject">Subject</option>
+          <option value="from">Sender</option>
+          <option value="everything">Everything (incl. body, slower)</option>
+        </select>
+      </section>
+      <section>
+        <h3>Date</h3>
+        <div class="seg" id="date">
+          <button data-v="any" class="on">Any</button><button data-v="today">Today</button><button data-v="7d">7 days</button><button data-v="30d">30 days</button><button data-v="year">This year</button><button data-v="older">Older</button>
+        </div>
+      </section>
+      <section>
+        <h3>Status</h3>
+        <label><input type="checkbox" id="unread"> Unread</label>
+        <label><input type="checkbox" id="flagged"> Flagged</label>
+        <label><input type="checkbox" id="attachment"> Has attachment</label>
+      </section>
+      <section>
+        <h3>Accounts</h3>
+        <div id="accounts"></div>
+      </section>
+      <section id="facetBox" hidden>
+        <h3>Folder</h3><ul class="facet" id="facetFolder"></ul>
+        <h3>Sender</h3><ul class="facet" id="facetSender"></ul>
+        <h3>Year</h3><ul class="facet" id="facetYear"></ul>
+      </section>
+    </aside>
+
+    <main>
+      <div id="permission" class="notice" hidden>
+        <p>To search your messages, ThunderJump needs permission to read them (it only reads; nothing is changed).</p>
+        <button id="allowRead" class="primary">Allow searching messages</button>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="bar">
+        <span id="summary" class="dim">Type to search, or pick a filter.</span>
+        <span class="spacer"></span>
+        <span id="selCount" class="dim"></span>
+        <button id="selectAll">Select all</button>
+        <button id="showInFolder" disabled>Show in folder</button>
+        <button id="moveTo" class="primary" disabled>Move to…</button>
+      </div>
+      <div class="scroll" id="messagesView">
+        <table class="results">
+          <thead><tr><th class="c"><input type="checkbox" id="checkAll" aria-label="Select all"></th><th>Date</th><th>From</th><th>Subject</th><th>Folder</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <ul class="scroll folders" id="foldersView" hidden></ul>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" hidden><span id="toastText"></span><button id="toastUndo">Undo</button></div>
+
+  <div id="picker" class="overlay" hidden>
+    <div class="picker">
+      <div class="picker-head" id="pickerHead"></div>
+      <input id="pickerInput" type="text" placeholder="Move to folder…  (type a name, j1, :j name)" autocomplete="off" spellcheck="false">
+      <ul id="pickerList"></ul>
+      <div class="picker-foot dim">↑↓ choose · Enter move · Esc cancel</div>
+    </div>
+  </div>
+</body>
+</html>
