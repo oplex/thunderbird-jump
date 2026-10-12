@@ -19,3 +19,5 @@ label.file { display: inline-block; cursor: pointer; padding: 1px 8px; border: 1
 label.file input { display: none; }
 p.ok, #backupStatus.ok { color: #2e7d32; }
 p.missing, #backupStatus.missing { color: #c62828; }
+.brand { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.brand h1 { font-size: 22px; margin: 0; }

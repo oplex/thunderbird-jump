@@ -5,10 +5,11 @@
 //   Thunderbird 115   no folder ids: a folder is { accountId, path }; accounts
 //                     list top-level `folders`; APIs take folder objects.
 //   Manifest V3 (140 build)    MailTab.tabId, mailTabs.update({ displayedFolderId })
-//   Manifest V2 (115 build)    MailTab.id,    mailTabs.update({ displayedFolder })
+//   Manifest V2 (91–139 build) MailTab.id,    mailTabs.update({ displayedFolder })
 //
 // The rest of the add-on works with plain string ids; on 115 they are made up
 // here as "<accountId>:<path>" (account root: "<accountId>:/").
+// (Thunderbird 91–114 behave like 115 here; 78 is not supported.)
 
 export const hasFolderIds = () => typeof browser.folders?.get === "function";
 const isMV3 = () => browser.runtime.getManifest().manifest_version >= 3;
@@ -41,7 +42,7 @@ export function tabIdOf(tab) {
 // What folders.getSubFolders / folders.create take as the parent.
 export async function folderArg(id) {
   if (hasFolderIds()) return id;
-  if (isLegacyRoot(id)) return browser.accounts.get(legacyRef(id).accountId, false);
+  if (isLegacyRoot(id)) return getAccount(legacyRef(id).accountId);
   return legacyRef(id);
 }
 
@@ -49,6 +50,48 @@ export async function folderArg(id) {
 export function displayProps(id) {
   if (isMV3()) return { displayedFolderId: id };
   return { displayedFolder: hasFolderIds() ? id : legacyRef(id) };
+}
+
+let major = null;
+// Thunderbird's major version number (e.g. 115).
+export async function thunderbirdMajor() {
+  if (major == null) major = parseInt((await browser.runtime.getBrowserInfo()).version, 10);
+  return major;
+}
+
+// accounts.list with folders. Thunderbird 78 takes no argument (and always
+// includes folders); 91+ take includeFolders / includeSubFolders.
+export async function listAccounts() {
+  try {
+    return await browser.accounts.list(true);
+  } catch {
+    return browser.accounts.list();
+  }
+}
+
+// folders.getSubFolders without/with descendants; 78 has no second argument.
+export async function getSubFolders(arg, deep) {
+  try {
+    return await browser.folders.getSubFolders(arg, deep);
+  } catch (e) {
+    if (!/argument/i.test(e?.message ?? "")) throw e;
+    return browser.folders.getSubFolders(arg);
+  }
+}
+
+// accounts.get(id) without folders; 78 takes only the id.
+export async function getAccount(id) {
+  try {
+    return await browser.accounts.get(id, false);
+  } catch {
+    return browser.accounts.get(id);
+  }
+}
+
+// mailTabs.get is missing in 78; find the tab through query instead.
+export async function getMailTab(tabId) {
+  if (typeof browser.mailTabs.get === "function") return browser.mailTabs.get(tabId);
+  return (await browser.mailTabs.query({})).find((t) => tabIdOf(t) === tabId) ?? null;
 }
 
 // Thunderbird 115 has no mailTabs.create.

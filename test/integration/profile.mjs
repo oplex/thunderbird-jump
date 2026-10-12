@@ -69,7 +69,7 @@ export function buildTestXpi(root, stage, xpi, port, imapAccount = null, downloa
   cpSync(join(root, "src"), join(stage, "src"), { recursive: true });
   cpSync(join(root, "icons"), join(stage, "icons"), { recursive: true });
   mkdirSync(join(stage, "test/integration"), { recursive: true });
-  for (const f of ["selftest.js", "util.js", "tests-local.js", "tests-ui.js", "tests-imap.js", "tests-features.js", "tests-backup.js"]) {
+  for (const f of ["selftest.js", "util.js", "tests-local.js", "tests-ui.js", "tests-imap.js", "tests-features.js", "tests-backup.js", "pane-scripts.js"]) {
     cpSync(join(root, "test/integration", f), join(stage, "test/integration", f));
   }
   writeFileSync(
@@ -111,6 +111,8 @@ export function makeProfile(dir, xpi, addonId, { imap = null, marionettePort = n
       "browser.download.dir": downloadDir,
       "browser.download.useDownloadDir": true,
       "browser.download.always_ask_before_handling_new_types": false,
+      // Older Thunderbird (91) asks what to do with a download unless told.
+      "browser.helperApps.neverAsk.saveToDisk": "application/json",
     });
   }
   writeFileSync(join(dir, "user.js"), Object.entries(prefs).map(([k, v]) => prefLine(k, v)).join("\n") + "\n");

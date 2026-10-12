@@ -33,7 +33,7 @@ export function makeFakeBrowser115() {
   const tab = { id: 7, windowId: 1, active: true, folderPaneVisible: true, displayedFolder: view("/INBOX") };
 
   const browser = {
-    runtime: { getManifest: () => ({ manifest_version: 2, version: "0.0.0" }) },
+    runtime: { getManifest: () => ({ manifest_version: 2, version: "0.0.0" }), getBrowserInfo: async () => ({ name: "Thunderbird", version: "115.5.1" }) },
     accounts: {
       list: async (deep) => [{ ...account, identities: [], folders: children("/").map((p) => view(p, deep)) }],
       get: async (id, deep) => (id === account.id ? { ...account, identities: [], folders: children("/").map((p) => view(p, deep)) } : null),

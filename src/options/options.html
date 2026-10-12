@@ -2,17 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Thunderbird Jump options</title>
+  <title>ThunderJump options</title>
   <link rel="stylesheet" href="options.css">
   <script type="module" src="options.js"></script>
 </head>
 <body>
+  <header class="brand"><img src="../../icons/thunderjump.svg" alt="" width="40" height="40"><h1>ThunderJump</h1></header>
   <section id="welcome" class="welcome" hidden>
-    <h2>Thunderbird Jump is installed</h2>
+    <h2>ThunderJump is installed</h2>
     <p>Press <kbd>Ctrl+Shift+Space</kbd> in the mail window (Mac: <kbd>⌘⇧Space</kbd>), type a few
       letters of a folder name and press <kbd>Enter</kbd>. Type <kbd>?</kbd> in it for all commands.</p>
     <p><b>Reinstalling?</b> Restore your shortcuts and settings from a backup file
-      (<code>thunderbird-jump-backup.json</code>, usually in your Downloads folder):
+      (<code>thunderjump-backup.json</code>, usually in your Downloads folder):
       <label class="file">Restore from backup… <input type="file" id="welcomeImport" accept=".json,application/json"></label></p>
     <button id="welcomeDismiss">Got it</button>
   </section>
@@ -41,7 +42,7 @@
     <label class="file">Import settings… <input type="file" id="importBackup" accept=".json,application/json"></label>
   </p>
   <label><input type="checkbox" id="autoBackup"> Keep an automatic backup in my Downloads folder
-    (<code>thunderbird-jump-backup.json</code>, updated whenever shortcuts, settings or keys change)</label>
+    (<code>thunderjump-backup.json</code>, updated whenever shortcuts, settings or keys change)</label>
   <p id="lastBackup" class="dim"></p>
   <p id="backupStatus"></p>
 

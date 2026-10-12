@@ -46,6 +46,8 @@ export async function openSpotlight() {
     allowScriptsToClose: true,
     ...geometry,
   });
+  // Older Thunderbird (102) ignores left/top when creating the window.
+  if (geometry.left != null) await browser.windows.update(win.id, { left: geometry.left, top: geometry.top }).catch(() => {});
   await session.set({ spotlightWindowId: win.id });
 }
 

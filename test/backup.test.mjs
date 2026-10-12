@@ -22,7 +22,7 @@ test("round trip", () => {
 
 test("rejects other files with a clear message", () => {
   assert.match(parseBackup("not json").error, /not valid JSON/);
-  assert.match(parseBackup('{"app":"other"}').error, /not a Thunderbird Jump backup/);
+  assert.match(parseBackup('{"app":"other"}').error, /not a ThunderJump backup/);
   assert.match(parseBackup(JSON.stringify({ app: BACKUP_APP, format: 99 })).error, /newer version/);
 });
 

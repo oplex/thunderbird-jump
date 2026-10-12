@@ -44,7 +44,7 @@ export function makeFakeBrowser() {
   };
 
   const browser = {
-    runtime: { getManifest: () => ({ manifest_version: 3, version: "0.0.0" }) },
+    runtime: { getManifest: () => ({ manifest_version: 3, version: "0.0.0" }), getBrowserInfo: async () => ({ name: "Thunderbird", version: "140.7.1" }) },
     accounts: {
       get: async (id) => {
         const a = accounts.find((x) => x.id === id);

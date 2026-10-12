@@ -4,6 +4,7 @@
 import { DOWNLOAD_DIR } from "./config.js";
 import { getShortcut, getSettings, saveSettings, setShortcut, deleteShortcut } from "../../src/tb/store.js";
 import { check, assert, waitFor, sleep, byPath, chrome } from "./util.js";
+import { importModule } from "./pane-scripts.js";
 
 const readFile = (name) =>
   chrome(`return IOUtils.readUTF8(PathUtils.join(arguments[0], arguments[1])).catch(() => null);`, [DOWNLOAD_DIR, name]);
@@ -49,7 +50,7 @@ export async function backupTests(root) {
     const view = await optionsView();
     const before = new Set(await listFiles());
     view.document.getElementById("exportBackup").click();
-    const name = await waitFor(async () => (await listFiles()).find((f) => !before.has(f) && /^thunderbird-jump-backup-.*\.json$/.test(f)), "exported file");
+    const name = await waitFor(async () => (await listFiles()).find((f) => !before.has(f) && /^thunderjump-backup-.*\.json$/.test(f)), "exported file");
     exported = JSON.parse(await waitFor(() => readFile(name), "file contents"));
     assert(exported.app === "thunderbird-jump", "wrong app tag");
     assert(exported.shortcuts["1"]?.folderId, "shortcut j1 missing from export");
@@ -69,7 +70,7 @@ export async function backupTests(root) {
     assert((await shortcutKeyOf("jump-2")) === "Alt+Ctrl+L", "key not restored");
     await waitFor(() => view.document.querySelector("#shortcuts td.name")?.textContent === "j1", "list refreshed");
     pickFile(view, "importBackup", "nope.json", '{"hello":1}');
-    await waitFor(() => /not a Thunderbird Jump backup/.test(view.document.getElementById("backupStatus").textContent), "rejects other files");
+    await waitFor(() => /not a ThunderJump backup/.test(view.document.getElementById("backupStatus").textContent), "rejects other files");
     await browser.commands.reset("jump-2");
     view.close();
   });
@@ -89,7 +90,7 @@ export async function backupTests(root) {
     // Granting needs a real click on Thunderbird's permission prompt; grant it directly.
     await chrome(
       `return (async () => {
-        const { ExtensionPermissions } = ChromeUtils.importESModule("resource://gre/modules/ExtensionPermissions.sys.mjs");
+        const { ExtensionPermissions } = ${importModule("ExtensionPermissions")};
         const ext = WebExtensionPolicy.getByID(arguments[0]).extension;
         await ExtensionPermissions.add(arguments[0], { permissions: ["downloads"], origins: [] }, ext);
         return true;
@@ -100,20 +101,20 @@ export async function backupTests(root) {
     await saveSettings({ autoBackup: true });
     await setShortcut("auto", (await byPath(`${root.name}/Trash`)).id, "Local Folders › Trash");
     const text = await waitFor(async () => {
-      const t = await readFile("thunderbird-jump-backup.json");
+      const t = await readFile("thunderjump-backup.json");
       return t && JSON.parse(t).shortcuts.auto ? t : null;
     }, "auto-backup file with the new shortcut", 15000);
     assert(JSON.parse(text).settings.autoBackup === true, "settings in file");
     // The manual export stays in the downloads list like any download; the
     // automatic one is removed from the list (the file itself stays).
-    await waitFor(async () => (await browser.downloads.search({ filenameRegex: "thunderbird-jump-backup\\.json$" })).length === 0, "auto-backup removed from downloads list", 5000);
+    await waitFor(async () => (await browser.downloads.search({ filenameRegex: "thunderjump-backup\\.json$" })).length === 0, "auto-backup removed from downloads list", 5000);
     assert((await browser.storage.local.get("lastBackup")).lastBackup, "lastBackup not recorded");
 
     // Next change overwrites the same file (no "(1)" copies).
     await deleteShortcut("auto");
-    await waitFor(async () => !JSON.parse((await readFile("thunderbird-jump-backup.json")) ?? "{}").shortcuts?.auto, "file updated", 15000);
+    await waitFor(async () => !JSON.parse((await readFile("thunderjump-backup.json")) ?? "{}").shortcuts?.auto, "file updated", 15000);
     await sleep(300);
-    const copies = (await listFiles()).filter((f) => f.startsWith("thunderbird-jump-backup") && !/\d{4}-\d\d-\d\d/.test(f));
+    const copies = (await listFiles()).filter((f) => f.startsWith("thunderjump-backup") && !/\d{4}-\d\d-\d\d/.test(f));
     assert(copies.length === 1, `backup copies: ${copies}`);
     assert((await getSettings()).autoBackup, "autoBackup setting lost");
   });

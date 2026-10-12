@@ -15,7 +15,7 @@ function exportFile() {
   backupText().then((text) => {
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
-    a.download = `thunderbird-jump-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `thunderjump-backup-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.append(a);
     a.click();
     a.remove();

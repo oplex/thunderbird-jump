@@ -12,6 +12,7 @@ import { join, resolve } from "node:path";
 import { buildTestXpi, makeProfile } from "./profile.mjs";
 import { findDovecot, startDovecot, freePort, IMAP_USER, IMAP_PASSWORD } from "./imap.mjs";
 import { marionette, storeImapLogin } from "./marionette.mjs";
+import { importModule } from "./pane-scripts.js";
 
 const IMAP_ACCOUNT = "Test IMAP";
 const root = resolve(import.meta.dirname, "../..");
@@ -82,8 +83,8 @@ const imap = dovecot ? { port: dovecot.port, user: IMAP_USER, accountName: IMAP_
 makeProfile(profile, xpi, addonId, { imap, marionettePort, downloadDir });
 
 console.log(`Starting ${bin} (headless), report port ${port}`);
-// Newer Thunderbird needs -remote-allow-system-access for Marionette's chrome scope.
-const extraArgs = legacy ? [] : ["-remote-allow-system-access"];
+// Thunderbird 138+ needs -remote-allow-system-access for Marionette's chrome scope.
+const extraArgs = Number(tbVersion) >= 138 ? ["-remote-allow-system-access"] : [];
 const tb = spawn(bin, ["--headless", "--no-remote", "--marionette", ...extraArgs, "--profile", profile], {
   stdio: ["ignore", "pipe", "pipe"],
   env: { ...process.env, MOZ_HEADLESS: "1" },
@@ -110,11 +111,11 @@ clearTimeout(timer);
 
 // Removing the add-on must leave the automatic backup file behind.
 if (result.tests && chrome) {
-  const backup = join(downloadDir, "thunderbird-jump-backup.json");
+  const backup = join(downloadDir, "thunderjump-backup.json");
   try {
     const gone = await chrome.exec(
       `return (async () => {
-        const { AddonManager } = ChromeUtils.importESModule("resource://gre/modules/AddonManager.sys.mjs");
+        const { AddonManager } = ${importModule("AddonManager")};
         const addon = await AddonManager.getAddonByID(arguments[0]);
         await addon.uninstall();
         return !(await AddonManager.getAddonByID(arguments[0]));

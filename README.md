@@ -1,42 +1,68 @@
-# Thunderbird Jump
+<p align="center"><img src="icons/thunderjump.svg" alt="ThunderJump logo" width="112"></p>
+
+# ThunderJump
 
 A Spotlight-style folder jumper for Thunderbird, in the spirit of Nostalgy.
 Press a key, type a few letters, hit Enter, and you are in the folder.
 
 **Why another one?** Nostalgy and similar add-ons rely on Thunderbird
 internals, so every big Thunderbird release can break them, and you wait for an
-update that may come weeks later or never. Thunderbird Jump uses only the
-official MailExtension APIs. It is small enough to read in an afternoon, and
-its tests run inside real Thunderbird ESR builds. When a new release changes
-something, CI shows it right away and the fix is usually a few lines.
+update that may come weeks later or never. ThunderJump uses only the official
+MailExtension APIs. It is small enough to read in an afternoon, and its tests
+run inside real Thunderbird builds, from 91 to the newest release. When a new
+release changes something, CI shows it right away and the fix is usually a
+few lines.
 
 **Read-only by design.** It never moves, copies, deletes or changes messages,
 and never renames or deletes folders. It only changes which folder is shown.
 The one thing it writes is a **new folder**, and only when you ask for one.
 
-Works with **Thunderbird 140+** and, through a separate build, **Thunderbird
-115–139**. Every change is tested in real Thunderbird 115.5.1, 140.7.1esr and
-the latest 140 ESR.
-
 ## Install
 
-1. Download the file for your Thunderbird from the
-   [latest release](https://github.com/oplex/thunderbird-jump/releases/latest)
-   (see Help → About Thunderbird for your version):
-   - Thunderbird **140 or newer**: `thunderbird-jump-<version>.xpi`
-   - Thunderbird **115 – 139**: `thunderbird-jump-<version>-tb115.xpi`
-2. In Thunderbird open **Add-ons and Themes** (Tools menu, or `Ctrl+Shift+A`).
-3. Click ⚙ → **Install Add-on From File…** and choose the `.xpi`.
+1. Check your version under **Help → About Thunderbird**.
+2. Download the matching file from the
+   [latest release](https://github.com/oplex/thunderbird-jump/releases/latest):
+   - Thunderbird **140 or newer**: `thunderjump-<version>.xpi`
+   - Thunderbird **91 – 139**: `thunderjump-<version>-tb91-139.xpi`
+3. In Thunderbird open **Add-ons and Themes** (Tools menu, or `Ctrl+Shift+A`).
+4. Click ⚙ → **Install Add-on From File…** and choose the `.xpi`.
    (Or drag the `.xpi` onto the Add-ons page.)
 
 That's it. Thunderbird checks this repo's releases for new versions and
 updates the add-on by itself, like any add-on from the official store. When
-you upgrade Thunderbird from 115 to 140, the next update check switches you to
-the 140 build automatically.
+you upgrade Thunderbird past 139, the next update check moves you to the 140+
+build automatically.
 
-On Thunderbird 115, **Shift+Enter** opens the folder in the current tab,
-because 115 doesn't let add-ons open new mail tabs. Everything else works the
-same.
+Both files work on 32- and 64-bit Thunderbird, on Windows, macOS and Linux.
+
+## Compatibility
+
+The full test suite (34 end-to-end checks in a real, headless Thunderbird,
+including an IMAP account) runs on every change for the versions marked CI,
+and every week on **the newest release of every major version from 91 up**
+(`.github/workflows/compat.yml`), so new Thunderbird releases are tested as
+soon as they come out.
+
+| Thunderbird | File | Tested |
+| --- | --- | --- |
+| 157 (latest release), 154–156 | `thunderjump-…xpi` | 157.0.1: 34/34 here + CI on every change. Others: weekly CI |
+| 153 ESR | `thunderjump-…xpi` | 153.4.0esr: 34/34 here + CI on every change |
+| 140 ESR – 152 | `thunderjump-…xpi` | 140.7.1esr: 34/34 here + CI on every change. Others: weekly CI |
+| 128 ESR – 139 | `…-tb91-139.xpi` | 125.0, 128.14.0esr, 139.0.2: 34/34 here. All: weekly CI |
+| 115 ESR | `…-tb91-139.xpi` | 115.5.1: 34/34 here + CI on every change; 115.18.0 weekly CI |
+| 102 ESR | `…-tb91-139.xpi` | 102.15.1: 34/34 here, weekly CI |
+| 91 ESR | `…-tb91-139.xpi` | 91.13.1: 34/34 here + CI on every change |
+| 78 and older | – | Not supported (missing APIs the add-on needs) |
+
+Also confirmed by hand on a real desktop: the latest Thunderbird release.
+Please open an issue with your Thunderbird version if something doesn't work.
+
+Differences on older versions:
+
+- Thunderbird **91–139**: **Shift+Enter** opens the folder in the current
+  tab where Thunderbird doesn't let add-ons open new mail tabs (before 121).
+- Thunderbird **91–102**: when exporting settings, Thunderbird may ask where
+  to save the file.
 
 ## Backup and moving to another computer
 
@@ -48,7 +74,7 @@ Open the options (type `:backup` in the palette):
   folder IDs differ (another computer, or a new profile), shortcuts are
   matched by folder path.
 - **Automatic backup** (off by default) keeps
-  `thunderbird-jump-backup.json` in your Downloads folder up to date whenever
+  `thunderjump-backup.json` in your Downloads folder up to date whenever
   something changes. It asks for permission to save files the first time.
 
 Thunderbird deletes an add-on's settings when you remove it, and it gives the
@@ -119,10 +145,10 @@ The options page also lists and deletes shortcuts.
 
 ```sh
 npm test              # unit tests (Node 22, fake Thunderbird APIs)
-npm run test:tb       # end-to-end inside real headless Thunderbird 140.7.1esr
+npm run test:tb       # end-to-end inside real headless Thunderbird (140.7.1esr by default)
 npm run lint          # web-ext lint (Firefox-only API warnings are expected)
 npm run check-lines   # every file must stay under 300 lines
-npm run build         # dist/thunderbird-jump-<version>.xpi and -tb115.xpi
+npm run build         # dist/thunderjump-<version>.xpi and -tb91-139.xpi
 ```
 
 `npm run test:tb` downloads Thunderbird into `.thunderbird/` (see
@@ -135,12 +161,15 @@ throwaway IMAP server and checks jumping and folder creation on a real IMAP
 account, including that the new mailboxes exist on the server. CI always
 runs the IMAP part. To use
 a different build, pass `TB_BIN=/path/to/thunderbird`, or run
-`sh scripts/fetch-thunderbird.sh latest-esr` (or `115.5.1`). On Thunderbird
-115–139 the runner automatically tests the Manifest V2 build.
+`sh scripts/fetch-thunderbird.sh latest-release` (or `latest-esr`, `115.5.1`,
+…). On Thunderbird 91–139 the runner automatically tests the Manifest V2
+build. `sh scripts/list-thunderbird-versions.sh` prints every version the
+weekly compatibility run covers.
 
-`src/tb/compat.js` holds the differences between Thunderbird 115 and 121+ (no
-folder ids in 115, different tab and folder fields), and
-`scripts/manifest-mv2.mjs` derives the 115 build's manifest from `manifest.json`.
+`src/tb/compat.js` holds the differences between Thunderbird versions (no
+folder ids before 121, different tab and folder fields, missing calls in
+older releases), and `scripts/manifest-mv2.mjs` derives the 91–139 build's
+manifest from `manifest.json`.
 
 ### Layout
 

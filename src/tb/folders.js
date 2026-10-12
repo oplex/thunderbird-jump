@@ -3,12 +3,12 @@
 // Nothing here moves, copies, renames or deletes messages or folders.
 
 import { splitFolderPath } from "../lib/parse.js";
-import { hasFolderIds, legacyRootId, folderIdOf, folderArg, specialUseOf } from "./compat.js";
+import { hasFolderIds, legacyRootId, folderIdOf, folderArg, specialUseOf, listAccounts, getSubFolders } from "./compat.js";
 
 // Flatten every account's folder tree into palette entries:
 // { id, name, accountId, accountName, segments, specialUse, isRoot, isVirtual }
 export async function loadFolders() {
-  const accounts = await browser.accounts.list(true);
+  const accounts = await listAccounts();
   const out = [];
   for (const account of accounts) {
     const root = account.rootFolder;
@@ -25,7 +25,7 @@ export async function loadFolders() {
     });
     // Thunderbird 115: no rootFolder, the top-level folders are `account.folders`.
     let subs = root ? root.subFolders : account.folders;
-    if (!subs) subs = await browser.folders.getSubFolders(root ? root.id : account, true);
+    if (!subs) subs = await getSubFolders(root ? root.id : account, true);
     walk(subs, account, [account.name], out);
   }
   return out;
@@ -65,7 +65,7 @@ export async function createFolderPath(parent, path) {
   let target = parent.id;
   for (const name of segments) {
     const arg = await folderArg(target);
-    const children = await browser.folders.getSubFolders(arg, false);
+    const children = await getSubFolders(arg, false);
     const existing = children.find((c) => c.name.toLowerCase() === name.toLowerCase());
     target = folderIdOf(existing ?? (await browser.folders.create(arg, name)));
   }

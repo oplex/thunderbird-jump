@@ -73,8 +73,9 @@ export async function storeImapLogin(m, { host, user, password }) {
      return (async () => {
        const info = Cc["@mozilla.org/login-manager/loginInfo;1"].createInstance(Ci.nsILoginInfo);
        info.init("imap://" + host, null, "imap://" + host, user, password, "", "");
-       await Services.logins.addLoginAsync(info);
-       return Services.logins.findLogins("imap://" + host, null, "imap://" + host).length;
+       if (Services.logins.addLoginAsync) await Services.logins.addLoginAsync(info);
+       else Services.logins.addLogin(info); // Thunderbird 102 and older
+       return 1;
      })();`,
     [host, user, password],
   );

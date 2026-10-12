@@ -20,7 +20,7 @@ jobs:
       - run: npm run build
       - uses: actions/upload-artifact@v4
         with:
-          name: thunderbird-jump-xpi
+          name: thunderjump-xpi
           path: dist/*.xpi
 
   thunderbird:
@@ -29,8 +29,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 115.5.1 runs the Manifest V2 build (scripts/manifest-mv2.mjs).
-        version: [140.7.1esr, latest-esr, 115.5.1]
+        # Below 140 the Manifest V2 build is tested (scripts/manifest-mv2.mjs).
+        # Every other major version is covered by compat.yml (weekly).
+        version: [latest-release, latest-esr, 140.7.1esr, 115.5.1, 91.13.1]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

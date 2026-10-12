@@ -1,9 +1,10 @@
 // Backup file format: build, validate, and re-map folder ids on import.
 // Pure (no browser APIs) so it can be unit tested.
 
+// Internal tag inside backup files; kept from the old name so old backups import.
 export const BACKUP_APP = "thunderbird-jump";
 export const BACKUP_FORMAT = 1;
-export const BACKUP_FILENAME = "thunderbird-jump-backup.json";
+export const BACKUP_FILENAME = "thunderjump-backup.json";
 
 // { shortcuts, settings, recent, keys } -> JSON-ready object.
 export function buildBackup({ shortcuts = {}, settings = {}, recent = [], keys = {} }, { version = "", now = new Date() } = {}) {
@@ -29,9 +30,9 @@ export function parseBackup(text) {
   } catch {
     return { ok: false, error: "This file is not valid JSON." };
   }
-  if (!isObject(raw) || raw.app !== BACKUP_APP) return { ok: false, error: "This is not a Thunderbird Jump backup file." };
+  if (!isObject(raw) || raw.app !== BACKUP_APP) return { ok: false, error: "This is not a ThunderJump backup file." };
   if (typeof raw.format !== "number" || raw.format > BACKUP_FORMAT) {
-    return { ok: false, error: "This backup was made by a newer version of Thunderbird Jump. Update the add-on first." };
+    return { ok: false, error: "This backup was made by a newer version of ThunderJump. Update the add-on first." };
   }
 
   const shortcuts = {};

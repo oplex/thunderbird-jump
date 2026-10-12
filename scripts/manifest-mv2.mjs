@@ -1,9 +1,9 @@
-// Derives the Manifest V2 manifest for the Thunderbird 115–139 build from
+// Derives the Manifest V2 manifest for the Thunderbird 91–139 build from
 // manifest.json (Manifest V3, Thunderbird 140+). Same add-on id and update
 // URL; updates.json sends each Thunderbird the build that fits it.
 import { readFileSync, writeFileSync } from "node:fs";
 
-export const LEGACY_MIN = "115.0";
+export const LEGACY_MIN = "91.0";
 export const LEGACY_MAX = "139.*";
 
 export function toMV2(manifest) {

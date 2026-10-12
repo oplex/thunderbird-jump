@@ -4,38 +4,7 @@
 import { createFolderPath } from "../../src/tb/folders.js";
 import { jumpToFolder, currentFolderId } from "../../src/tb/tabs.js";
 import { check, assert, waitFor, sleep, byPath, openPalette, type, press, closed, headerTexts, chrome } from "./util.js";
-
-// What the 3-pane folder tree shows right now (read via chrome privileges).
-const PANE_STATE = `
-  const win = Services.wm.getMostRecentWindow("mail:3pane");
-  const pane = win.document.getElementById("tabmail").currentAbout3Pane;
-  const tree = pane.folderTree;
-  const row = tree.selectedRow;
-  if (!row) return null;
-  let scroller = tree;
-  while (scroller && scroller.scrollHeight <= scroller.clientHeight) scroller = scroller.parentElement;
-  const r = row.firstElementChild.getBoundingClientRect();
-  const v = (scroller ?? tree).getBoundingClientRect();
-  return {
-    paneVisible: pane.paneLayout.folderPaneVisible,
-    uri: row.uri,
-    collapsedAncestor: !!row.parentNode.closest("li.collapsed"),
-    inView: r.top >= v.top - 1 && r.bottom <= v.bottom + 1,
-    scrolled: (scroller?.scrollTop ?? 0) > 0,
-    overflowing: !!scroller,
-    debug: { scroller: scroller && (scroller.id || scroller.tagName), rowTop: r.top, rowBottom: r.bottom, viewTop: v.top, viewBottom: v.bottom, scrollTop: scroller?.scrollTop, winH: win.innerHeight },
-  };`;
-
-// Collapse the folder-tree row whose URI ends with `suffix`.
-const COLLAPSE = `
-  const win = Services.wm.getMostRecentWindow("mail:3pane");
-  const tree = win.document.getElementById("tabmail").currentAbout3Pane.folderTree;
-  const row = [...tree.querySelectorAll("li")].find((li) => li.uri?.endsWith(arguments[0]));
-  if (!row) return false;
-  tree.collapseRow(row);
-  tree.scrollTop = 0;
-  for (let el = tree.parentElement; el; el = el.parentElement) el.scrollTop = 0;
-  return row.classList.contains("collapsed");`;
+import { PANE_STATE, COLLAPSE } from "./pane-scripts.js";
 
 export async function featureTests(windowId, root) {
   const at = (path) => byPath(`${root.name}/${path}`);
@@ -77,7 +46,7 @@ export async function featureTests(windowId, root) {
       const v = await chrome(PANE_STATE);
       return v?.uri?.endsWith("/Target") && v.inView ? v : null;
     }, "Target selected and in view", 10000).catch(async () => chrome(PANE_STATE));
-    assert(s?.uri?.endsWith("/Target") && !s.collapsedAncestor && s.inView, `pane state: ${JSON.stringify(s)}`);
+    assert(s?.uri?.endsWith("/Target") && !s.collapsedAncestor && s.inView, `pane state: ${JSON.stringify(s)}, displayed: ${await currentFolderId(windowId)}`);
   });
 
   await check("search shows matching recent folders first", async () => {

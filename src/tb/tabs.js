@@ -1,7 +1,7 @@
 // Navigation helpers: find the mail window/tab and change the displayed folder.
 // Changing the displayed folder is purely a view change; no data is modified.
 
-import { hasFolderIds, legacyRef, legacyRootId, isLegacyRoot, folderIdOf, tabIdOf, displayProps, canCreateMailTab } from "./compat.js";
+import { hasFolderIds, legacyRef, legacyRootId, isLegacyRoot, folderIdOf, tabIdOf, displayProps, canCreateMailTab, thunderbirdMajor, getMailTab, getAccount } from "./compat.js";
 
 // The 3-pane window the palette should act on.
 // `hint` is a window id passed in by the opener (spotlight mode), if any.
@@ -47,7 +47,7 @@ async function showFolder(tabId, folderId, revealPane) {
   // Show the pane *before* selecting: Thunderbird scrolls the selected row
   // into view at selection time, which does nothing while the pane is hidden.
   if (revealPane) {
-    const tab = await browser.mailTabs.get(tabId);
+    const tab = await getMailTab(tabId);
     if (!tab.folderPaneVisible) {
       await browser.mailTabs.update(tabId, { folderPaneVisible: true });
       // Let the pane get its final size before Thunderbird scrolls in it.
@@ -59,6 +59,16 @@ async function showFolder(tabId, folderId, revealPane) {
   } catch (e) {
     if (!/not viewable/i.test(e?.message ?? "")) throw e;
     await browser.mailTabs.update(tabId, { ...props, folderMode: "all" });
+  }
+  // Thunderbird 102 and older *toggle* the parents of a hidden folder open,
+  // so parents that were already expanded get closed again and the folder
+  // isn't selected. Each retry gets one level further.
+  if ((await thunderbirdMajor()) < 115) {
+    for (let i = 0; i < 8; i++) {
+      const tab = await getMailTab(tabId);
+      if (tab.displayedFolder && folderIdOf(tab.displayedFolder) === folderId) break;
+      await browser.mailTabs.update(tabId, props);
+    }
   }
   if (revealPane) await rescrollAfterExpand(tabId, folderId);
 }
@@ -77,13 +87,15 @@ async function rootAndDepth(folderId) {
     return { rootId: legacyRootId(accountId), depth: isLegacyRoot(folderId) ? 0 : path.split("/").filter(Boolean).length };
   }
   const folder = await browser.folders.get(folderId);
-  const account = await browser.accounts.get(folder.accountId, false);
+  const account = await getAccount(folder.accountId);
   const depth = folder.isRoot ? 0 : (folder.path ?? "").split("/").filter(Boolean).length;
   return { rootId: account?.rootFolder?.id, depth };
 }
 
 async function rescrollAfterExpand(tabId, folderId) {
   if (globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+  // The animated folder tree arrived in 115; older versions scroll correctly.
+  if ((await thunderbirdMajor()) < 115) return;
   const { rootId, depth } = await rootAndDepth(folderId);
   if (!rootId || depth < 2) return;
   await new Promise((r) => setTimeout(r, EXPAND_ANIMATION_MS));

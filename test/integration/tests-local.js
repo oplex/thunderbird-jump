@@ -6,6 +6,8 @@ import { jumpToFolder, currentFolderId } from "../../src/tb/tabs.js";
 import { getShortcut } from "../../src/tb/store.js";
 import { check, assert, waitFor, log, byPath, openPalette, type, press, closed, statusText } from "./util.js";
 
+const idOf = (tab) => tab.tabId ?? tab.id; // MV3 / MV2 field name
+
 export async function localTests(windowId) {
   let root;
   const at = (path) => byPath(`${root.name}/${path}`);
@@ -120,10 +122,10 @@ export async function localTests(windowId) {
     await closed(p);
     const tab = await waitFor(async () => {
       const now = await browser.mailTabs.query({});
-      return now.length > before.length && now.find((t) => !before.some((b) => b.tabId === t.tabId));
+      return now.length > before.length && now.find((t) => !before.some((b) => idOf(b) === idOf(t)));
     }, "a new mail tab");
-    await waitFor(async () => (await browser.mailTabs.get(tab.tabId)).displayedFolder?.id === beta.id, "new tab showing Beta");
-    await browser.tabs.remove(tab.tabId);
+    await waitFor(async () => (await browser.mailTabs.get(idOf(tab))).displayedFolder?.id === beta.id, "new tab showing Beta");
+    await browser.tabs.remove(idOf(tab));
   });
 
   await check("palette: 'query > Name' creates inside searched parent", async () => {

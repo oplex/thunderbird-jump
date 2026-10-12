@@ -16,12 +16,12 @@ const updates = {
       updates: [
         {
           version,
-          update_link: `https://github.com/${repo}/releases/download/v${version}/thunderbird-jump-${version}.xpi`,
+          update_link: `https://github.com/${repo}/releases/download/v${version}/thunderjump-${version}.xpi`,
           applications: { gecko: { strict_min_version } },
         },
         {
           version,
-          update_link: `https://github.com/${repo}/releases/download/v${version}/thunderbird-jump-${version}-tb115.xpi`,
+          update_link: `https://github.com/${repo}/releases/download/v${version}/thunderjump-${version}-tb91-139.xpi`,
           applications: { gecko: { strict_min_version: LEGACY_MIN, strict_max_version: LEGACY_MAX } },
         },
       ],

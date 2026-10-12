@@ -40,8 +40,8 @@ jobs:
             echo "$TAG is already released; bump the version first (scripts/release.sh)"; exit 1
           fi
           gh release create "$TAG" dist/*.xpi dist/updates.json --target "$GITHUB_SHA" \
-            --title "Thunderbird Jump $TAG" --generate-notes \
+            --title "ThunderJump $TAG" --generate-notes \
             --notes "Install: download the .xpi for your Thunderbird below, then open Add-ons and Themes → ⚙ → Install Add-on From File…  Updates install automatically after that.
 
-          - Thunderbird 140 or newer: thunderbird-jump-${TAG#v}.xpi
-          - Thunderbird 115 – 139: thunderbird-jump-${TAG#v}-tb115.xpi"
+          - Thunderbird 140 or newer: thunderjump-${TAG#v}.xpi
+          - Thunderbird 91 – 139: thunderjump-${TAG#v}-tb91-139.xpi"

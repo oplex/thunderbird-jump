@@ -1,13 +1,13 @@
 #!/bin/sh
 # Package the add-on:
-#   dist/thunderbird-jump-<version>.xpi        Thunderbird 140+ (Manifest V3)
-#   dist/thunderbird-jump-<version>-tb115.xpi  Thunderbird 115–139 (Manifest V2)
+#   dist/thunderjump-<version>.xpi            Thunderbird 140+ (Manifest V3)
+#   dist/thunderjump-<version>-tb91-139.xpi   Thunderbird 91–139 (Manifest V2)
 set -eu
 cd "$(dirname "$0")/.."
 version=$(node -p "require('./manifest.json').version")
 mkdir -p dist
-out="dist/thunderbird-jump-$version.xpi"
-legacy="dist/thunderbird-jump-$version-tb115.xpi"
+out="dist/thunderjump-$version.xpi"
+legacy="dist/thunderjump-$version-tb91-139.xpi"
 rm -f "$out" "$legacy"
 zip -qr "$out" manifest.json icons src -x src/background/background.html
 

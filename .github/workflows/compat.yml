@@ -1,0 +1,49 @@
+name: Compatibility
+
+# Runs the full real-Thunderbird test suite on the newest release of every
+# Thunderbird major version from 91 up. New releases are picked up
+# automatically. Runs weekly, or press "Run workflow" in the Actions tab.
+on:
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+jobs:
+  versions:
+    runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.list.outputs.list }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        run: echo "list=$(sh scripts/list-thunderbird-versions.sh 91)" >> "$GITHUB_OUTPUT"
+
+  thunderbird:
+    needs: versions
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        version: ${{ fromJSON(needs.versions.outputs.list) }}
+    name: Thunderbird ${{ matrix.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Thunderbird runtime libraries and Dovecot (IMAP test server)
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-0 libdbus-glib-1-2 libasound2t64 libx11-xcb1 libxtst6 dovecot-imapd
+      - name: Download Thunderbird ${{ matrix.version }}
+        run: echo "TB_BIN=$(sh scripts/fetch-thunderbird.sh ${{ matrix.version }})" >> "$GITHUB_ENV"
+      - name: Run the test suite
+        env:
+          TB_REQUIRE_IMAP: "1"
+        run: node test/integration/run.mjs | tee result.txt
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Thunderbird ${{ matrix.version }}"
+            grep -E '^(ok|FAIL|[0-9]+ passed)' result.txt || echo "no result"
+          } >> "$GITHUB_STEP_SUMMARY"

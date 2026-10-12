@@ -1,9 +1,9 @@
 {
-  "name": "thunderbird-jump",
-  "version": "1.3.0",
+  "name": "thunderjump",
+  "version": "1.4.0",
   "private": true,
   "type": "module",
-  "description": "Spotlight-style folder jumper for Thunderbird",
+  "description": "ThunderJump: Spotlight-style folder jumper for Thunderbird",
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "check-lines": "node scripts/check-lines.mjs",
