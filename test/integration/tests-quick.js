@@ -25,10 +25,13 @@ export async function quickTests(windowId, root) {
          const pane = win.document.getElementById("tabmail").currentAbout3Pane;
          const doc = pane?.document ?? win.document;
          const menu = doc.getElementById("folderPaneContext");
+         const tree = pane?.folderTree ?? doc.getElementById("folderTree");
          const shown = new Promise((r) => menu.addEventListener("popupshown", r, { once: true }));
-         menu.openPopupAtScreen(0, 0, true);
+         // A real (trusted) right-click on the first folder row.
+         const r = tree.getBoundingClientRect();
+         tree.ownerGlobal.windowUtils.sendMouseEvent("contextmenu", r.left + 40, r.top + 12, 2, 1, 0);
          await shown;
-         await new Promise((r) => win.setTimeout(r, 500));
+         await new Promise((res) => win.setTimeout(res, 500));
          const out = [...menu.querySelectorAll("menu, menuitem")].map((m) => m.getAttribute("label"));
          menu.hidePopup();
          return out;
